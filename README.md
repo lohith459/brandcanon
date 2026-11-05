@@ -4,6 +4,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://python.org)
 
+> 🌐 **Live Demo URL**: [https://brandcanon.onrender.com](https://brandcanon.onrender.com) *(Update with your active deployment URL)*
+
 **BrandCanon** is an intelligent pre-publication brand governance platform designed for the Inkloom AI problem statement. It reviews marketing copy, blog posts, and regulatory disclosures against approved guidelines, verified facts, preferred terminology, and visual/accessibility assets **before publication**.
 
 It pinpoints exact issues, cites the verified rule or factual ceiling behind each violation, suggests intent-preserving fixes, and routes content through a human-governed approval queue. **AI never approves or publishes anything.**
