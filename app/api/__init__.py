@@ -1,0 +1,1 @@
+"""BrandCanon API routes package."""
