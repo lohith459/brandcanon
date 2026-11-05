@@ -1,5 +1,5 @@
 import uuid
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Header, status
 from sqlmodel import Session, select, desc
@@ -14,15 +14,28 @@ from app.core.roles import get_current_role
 from app.core.parsers import extract_text_from_file
 from app.core.diff import compute_text_diff
 from app.engine.layer_a import run_layer_a_checks
+from app.engine.layer_b import run_layer_b_review
 from app.engine.layer_d import verify_and_ground_findings
 from app.engine.tiering import calculate_risk_tier
 
 router = APIRouter(prefix="/api/submissions", tags=["Submissions"])
 
-def _execute_review_for_version(version: Version, submission: Submission, session: Session) -> List[Finding]:
-    """Runs deterministic Layer A + Layer D Verifier + Risk Tier calculation on a version."""
+def _execute_review_for_version(
+    version: Version,
+    submission: Submission,
+    session: Session,
+    confidential_mode: bool = False
+) -> Tuple[List[Finding], str]:
+    """Runs deterministic Layer A + optional Layer B AI + Layer D Verifier + Risk Tier calculation."""
+    # 1. Deterministic Layer A checks
     raw_findings = run_layer_a_checks(version.text, session, version_id=version.id)
-    verified_findings, dropped_count = verify_and_ground_findings(raw_findings, version.text, session)
+    
+    # 2. Optional Layer B AI checks (with PII redaction and confidential mode gating)
+    ai_findings, ai_notice = run_layer_b_review(version.text, session, version_id=version.id, confidential_mode=confidential_mode)
+    
+    # 3. Layer D Verifier: Ground both Layer A and Layer B findings against Canon evidence
+    combined_raw = raw_findings + ai_findings
+    verified_findings, dropped_count = verify_and_ground_findings(combined_raw, version.text, session)
     
     # Save verified findings to database
     for f in verified_findings:
@@ -39,11 +52,11 @@ def _execute_review_for_version(version: Version, submission: Submission, sessio
         submission_id=submission.id,
         actor_role="System (Review Engine)",
         action="reviewed",
-        detail=f"Generated {len(verified_findings)} verified findings ({dropped_count} dropped by verifier). Assessed as {new_risk_tier}."
+        detail=f"Generated {len(verified_findings)} verified findings ({dropped_count} dropped by verifier). {ai_notice} Assessed as {new_risk_tier}."
     )
     session.add(audit)
     session.commit()
-    return verified_findings
+    return verified_findings, ai_notice
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_submission(
@@ -78,13 +91,16 @@ def create_submission(
     session.commit()
     
     # Run immediate review
-    findings = _execute_review_for_version(version, submission, session)
+    findings, ai_notice = _execute_review_for_version(
+        version, submission, session, confidential_mode=payload.confidential_mode
+    )
     
     return {
         "submission": submission.model_dump(),
         "active_version": version.model_dump(),
         "findings": [f.model_dump() for f in findings],
-        "findings_count": len(findings)
+        "findings_count": len(findings),
+        "ai_notice": ai_notice
     }
 
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
