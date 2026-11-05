@@ -1,6 +1,5 @@
 # BrandCanon 🛡️
 
-[![CI Tests](https://github.com/lohith459/brandcanon/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/lohith459/brandcanon)
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/lohith459/brandcanon)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://python.org)
