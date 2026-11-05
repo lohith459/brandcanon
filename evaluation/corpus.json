@@ -1,0 +1,212 @@
+[
+  {
+    "id": "eval-01",
+    "text": "Guaranteed 12% returns!! Join 50,000+ investors on FinEdge Pro. It's FREE forever!",
+    "expected_rule_ids": ["CMP-004", "DISC-002", "TRM-011", "TON-003", "MSG-001"],
+    "expected_fact_ids": ["F-017", "F-022"],
+    "category": "multi"
+  },
+  {
+    "id": "eval-02",
+    "text": "Start investing in automated smart portfolios with FinEdge Plus. Investments are subject to market risks.",
+    "expected_rule_ids": [],
+    "expected_fact_ids": [],
+    "category": "clean"
+  },
+  {
+    "id": "eval-03",
+    "text": "Our platform guarantees risk-free profits on all index funds. Sign up today!",
+    "expected_rule_ids": ["CMP-004", "DISC-002"],
+    "expected_fact_ids": [],
+    "category": "compliance"
+  },
+  {
+    "id": "eval-04",
+    "text": "We provide assured returns on our short-term cash reserves.",
+    "expected_rule_ids": ["CMP-004", "DISC-002"],
+    "expected_fact_ids": [],
+    "category": "compliance"
+  },
+  {
+    "id": "eval-05",
+    "text": "Explore investment opportunities with FinEdge Plus to grow your capital.",
+    "expected_rule_ids": ["DISC-002"],
+    "expected_fact_ids": [],
+    "category": "compliance"
+  },
+  {
+    "id": "eval-06",
+    "text": "Download the new update for FinEdge Pro to access enhanced charts.",
+    "expected_rule_ids": ["TRM-011"],
+    "expected_fact_ids": [],
+    "category": "terminology"
+  },
+  {
+    "id": "eval-07",
+    "text": "FinEdge Professional desktop edition is now ready for beta testing.",
+    "expected_rule_ids": ["TRM-011"],
+    "expected_fact_ids": [],
+    "category": "terminology"
+  },
+  {
+    "id": "eval-08",
+    "text": "Our platform helps retail punters make quick options trades.",
+    "expected_rule_ids": ["TRM-002"],
+    "expected_fact_ids": [],
+    "category": "terminology"
+  },
+  {
+    "id": "eval-09",
+    "text": "Why let day-traders and gamblers lose when they can use disciplined indices?",
+    "expected_rule_ids": ["TRM-002"],
+    "expected_fact_ids": [],
+    "category": "terminology"
+  },
+  {
+    "id": "eval-10",
+    "text": "Try our proprietary robo-advisor for automated wealth rebalancing.",
+    "expected_rule_ids": ["TRM-003"],
+    "expected_fact_ids": [],
+    "category": "terminology"
+  },
+  {
+    "id": "eval-11",
+    "text": "We are proud to serve over 65,000 active users across the country.",
+    "expected_rule_ids": [],
+    "expected_fact_ids": ["F-017"],
+    "category": "facts"
+  },
+  {
+    "id": "eval-12",
+    "text": "More than 90,000 investors trust our platform every single day.",
+    "expected_rule_ids": ["DISC-002"],
+    "expected_fact_ids": ["F-017"],
+    "category": "facts"
+  },
+  {
+    "id": "eval-13",
+    "text": "FinEdge connects with 45 brokerages to aggregate your portfolio seamlessly.",
+    "expected_rule_ids": ["DISC-002"],
+    "expected_fact_ids": ["F-004"],
+    "category": "facts"
+  },
+  {
+    "id": "eval-14",
+    "text": "Based on our survey data, we boast a 94% customer satisfaction rating from Q1.",
+    "expected_rule_ids": [],
+    "expected_fact_ids": ["F-006"],
+    "category": "facts"
+  },
+  {
+    "id": "eval-15",
+    "text": "Open an account now and get free forever automated tax rebalancing!",
+    "expected_rule_ids": ["MSG-001"],
+    "expected_fact_ids": ["F-022"],
+    "category": "messaging"
+  },
+  {
+    "id": "eval-16",
+    "text": "Experience truly unlimited free wealth management with no subscriptions.",
+    "expected_rule_ids": ["MSG-001"],
+    "expected_fact_ids": ["F-022"],
+    "category": "messaging"
+  },
+  {
+    "id": "eval-17",
+    "text": "Don't miss out before it's too late! Act NOW or stay broke!",
+    "expected_rule_ids": ["TON-001", "TON-003"],
+    "expected_fact_ids": [],
+    "category": "tone"
+  },
+  {
+    "id": "eval-18",
+    "text": "Check out our latest market recap!! We are excited to see you!!",
+    "expected_rule_ids": ["TON-003"],
+    "expected_fact_ids": [],
+    "category": "tone"
+  },
+  {
+    "id": "eval-19",
+    "text": "This offer is HUGE and EXCLUSIVE for all members today.",
+    "expected_rule_ids": ["TON-003"],
+    "expected_fact_ids": [],
+    "category": "tone"
+  },
+  {
+    "id": "eval-20",
+    "text": "Check our performance: <img src='perf.png'>. It highlights 5-year steady growth.",
+    "expected_rule_ids": ["ACC-001"],
+    "expected_fact_ids": [],
+    "category": "accessibility"
+  },
+  {
+    "id": "eval-21",
+    "text": "Here is the visual asset breakdown: ![](https://assets.finedge.com/chart.svg)",
+    "expected_rule_ids": ["ACC-001"],
+    "expected_fact_ids": [],
+    "category": "accessibility"
+  },
+  {
+    "id": "eval-22",
+    "text": "Click the green button to confirm your investment allocation.",
+    "expected_rule_ids": ["ACC-002", "DISC-002"],
+    "expected_fact_ids": [],
+    "category": "accessibility"
+  },
+  {
+    "id": "eval-23",
+    "text": "Want to learn more about our fee structure? Click here to read more.",
+    "expected_rule_ids": ["MSG-002"],
+    "expected_fact_ids": [],
+    "category": "messaging"
+  },
+  {
+    "id": "eval-24",
+    "text": "Over 35,000 members rely on FinEdge Plus for clear portfolio tracking. Investments are subject to market risks.",
+    "expected_rule_ids": [],
+    "expected_fact_ids": [],
+    "category": "clean"
+  },
+  {
+    "id": "eval-25",
+    "text": "Smart portfolio allocation balances your personal risk tolerance with long-term compound growth. Investments are subject to market risks.",
+    "expected_rule_ids": [],
+    "expected_fact_ids": [],
+    "category": "clean"
+  },
+  {
+    "id": "eval-26",
+    "text": "You should put all your savings into this tech fund right now.",
+    "expected_rule_ids": ["CMP-001"],
+    "expected_fact_ids": [],
+    "category": "compliance"
+  },
+  {
+    "id": "eval-27",
+    "text": "Use this tax-free loophole to guarantee your retirement nest egg.",
+    "expected_rule_ids": ["CMP-001"],
+    "expected_fact_ids": [],
+    "category": "compliance"
+  },
+  {
+    "id": "eval-28",
+    "text": "FinEdge connects with 15 leading brokerages to sync your accounts securely.",
+    "expected_rule_ids": [],
+    "expected_fact_ids": [],
+    "category": "clean"
+  },
+  {
+    "id": "eval-29",
+    "text": "Review our verified uptime SLA of 99.95% over the past 12 months.",
+    "expected_rule_ids": [],
+    "expected_fact_ids": [],
+    "category": "clean"
+  },
+  {
+    "id": "eval-30",
+    "text": "Stay calm and invest with discipline. FinEdge Plus helps you stay on track. Investments are subject to market risks.",
+    "expected_rule_ids": [],
+    "expected_fact_ids": [],
+    "category": "clean"
+  }
+]

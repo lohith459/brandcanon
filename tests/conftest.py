@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import SQLModel, Session, create_engine
 from sqlmodel.pool import StaticPool
 
-from app.main import app
+from app.main import app, rate_limit_records
 from app.database import get_session
 from app.seed.seed_data import seed_canon_data
 
@@ -25,6 +25,7 @@ def session_fixture() -> Generator[Session, None, None]:
 
 @pytest.fixture(name="client")
 def client_fixture(session: Session) -> Generator[TestClient, None, None]:
+    rate_limit_records.clear()
     def get_test_session():
         yield session
 
@@ -32,3 +33,4 @@ def client_fixture(session: Session) -> Generator[TestClient, None, None]:
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+    rate_limit_records.clear()
