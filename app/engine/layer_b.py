@@ -35,9 +35,10 @@ class AIProviderAdapter(ABC):
 
 class GeminiProviderAdapter(AIProviderAdapter):
     """Google Gemini REST API implementation using standard httpx."""
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, model: Optional[str] = None):
         self.api_key = api_key
-        self.url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.api_key}"
+        self.model = model or settings.GEMINI_MODEL
+        self.url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
 
     def analyze(self, text: str, rules: List[Rule], facts: List[Fact]) -> List[AIFindingSchema]:
         prompt = self._build_prompt(text, rules, facts)
@@ -74,8 +75,9 @@ class GeminiProviderAdapter(AIProviderAdapter):
 
 class AnthropicProviderAdapter(AIProviderAdapter):
     """Anthropic Claude REST API implementation using standard httpx."""
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, model: Optional[str] = None):
         self.api_key = api_key
+        self.model = model or settings.ANTHROPIC_MODEL
         self.url = "https://api.anthropic.com/v1/messages"
 
     def analyze(self, text: str, rules: List[Rule], facts: List[Fact]) -> List[AIFindingSchema]:
@@ -86,7 +88,7 @@ class AnthropicProviderAdapter(AIProviderAdapter):
             "content-type": "application/json"
         }
         payload = {
-            "model": "claude-3-haiku-20240307",
+            "model": self.model,
             "max_tokens": 1000,
             "temperature": 0.1,
             "messages": [{"role": "user", "content": prompt}]
@@ -118,9 +120,9 @@ class AnthropicProviderAdapter(AIProviderAdapter):
 def get_ai_adapter() -> Optional[AIProviderAdapter]:
     """Returns active AI provider adapter based on configured environment variables."""
     if settings.GEMINI_API_KEY:
-        return GeminiProviderAdapter(settings.GEMINI_API_KEY)
+        return GeminiProviderAdapter(settings.GEMINI_API_KEY, settings.GEMINI_MODEL)
     elif settings.ANTHROPIC_API_KEY:
-        return AnthropicProviderAdapter(settings.ANTHROPIC_API_KEY)
+        return AnthropicProviderAdapter(settings.ANTHROPIC_API_KEY, settings.ANTHROPIC_MODEL)
     return None
 
 def run_layer_b_review(
