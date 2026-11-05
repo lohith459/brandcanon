@@ -1,579 +1,719 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BrandCanon — Intelligent Brand Governance & Pre-Publication Review</title>
-    <!-- Tailwind CSS CDN -->
+    <title>BrandCanon — Intelligent Brand Governance</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind (utility helpers only — most styles come from custom.css) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        finedge: {
-                            navy: '#0A192F',
-                            cyan: '#00D2A0',
-                            slate: '#4A5568',
-                            coral: '#E53E3E'
-                        }
+                        bc: { purple: '#8b5cf6', cyan: '#06d6a0', navy: '#0a0b1a' }
                     }
                 }
             }
         }
     </script>
+
     <link rel="stylesheet" href="/static/css/custom.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
     </style>
 </head>
-<body class="h-full flex flex-col text-slate-800 antialiased">
+<body>
 
-    <!-- TOP HEADER -->
-    <header class="bg-finedge-navy text-white border-b border-slate-700 shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <!-- Brand Logo & Title -->
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('submit')">
-                <div class="w-9 h-9 rounded-lg bg-finedge-cyan flex items-center justify-center font-bold text-finedge-navy text-xl shadow-md">
-                    BC
+<!-- Animated background orbs -->
+<div class="orb orb-1" aria-hidden="true"></div>
+<div class="orb orb-2" aria-hidden="true"></div>
+<div class="orb orb-3" aria-hidden="true"></div>
+
+<!-- ═══════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════ -->
+<header class="bc-header">
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+
+        <!-- Brand Logo -->
+        <div style="display:flex;align-items:center;gap:12px;cursor:pointer;flex-shrink:0;" onclick="navigateTo('submit')">
+            <div class="bc-logo-mark">BC</div>
+            <div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-weight:800;font-size:16px;color:#f0f0ff;letter-spacing:-0.02em;">BrandCanon</span>
+                    <span style="background:rgba(139,92,246,0.15);color:#c4b5fd;font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700;border:1px solid rgba(139,92,246,0.3);letter-spacing:0.04em;">FinEdge</span>
                 </div>
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <span class="font-bold text-lg tracking-tight">BrandCanon</span>
-                        <span class="bg-cyan-900/60 text-cyan-300 text-xs px-2 py-0.5 rounded font-mono border border-cyan-700">FinEdge MVP</span>
+                <p style="font-size:11px;color:#6b7280;margin:0;line-height:1.3;">AI-Powered Brand Governance</p>
+            </div>
+        </div>
+
+        <!-- Stepper Nav -->
+        <nav style="display:flex;align-items:center;gap:4px;" aria-label="Workflow steps">
+            <button id="step-btn-submit" onclick="navigateTo('submit')" class="nav-step-btn active">
+                <span class="step-num">1</span>
+                <span>Submit</span>
+            </button>
+            <span class="nav-arrow">→</span>
+            <button id="step-btn-review" onclick="navigateTo('review')" class="nav-step-btn">
+                <span class="step-num">2</span>
+                <span>Review</span>
+            </button>
+            <span class="nav-arrow">→</span>
+            <button id="step-btn-diff" onclick="navigateTo('diff')" class="nav-step-btn">
+                <span class="step-num">3</span>
+                <span>Fix &amp; Diff</span>
+            </button>
+            <span class="nav-arrow">→</span>
+            <button id="step-btn-approval" onclick="navigateTo('approval')" class="nav-step-btn">
+                <span class="step-num">4</span>
+                <span>Approve</span>
+            </button>
+            <button id="step-btn-canon" onclick="navigateTo('canon')" class="nav-step-btn" style="margin-left:12px;">
+                <span>🗂</span>
+                <span>Canon Registry</span>
+            </button>
+        </nav>
+
+        <!-- Right controls -->
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+            <!-- Try Demo -->
+            <button onclick="loadWorkedExampleDemo()" class="btn-demo" title="Load worked example and run review instantly">
+                <span>⚡</span>
+                <span>Try the demo</span>
+            </button>
+
+            <!-- Confidential Mode -->
+            <label class="confidential-label" title="Disables AI layer, zero external calls">
+                <input type="checkbox" id="confidential-mode-toggle">
+                <span style="display:flex;align-items:center;gap:5px;">🛡 Confidential Mode</span>
+            </label>
+
+            <!-- Role Switcher -->
+            <div class="role-select-wrap">
+                <span style="font-size:11px;color:#6b7280;font-weight:600;">Role:</span>
+                <select id="role-selector" onchange="onRoleChanged()">
+                    <option value="Creator">Creator</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Compliance Reviewer">Compliance Reviewer</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════
+     SCREENS WRAPPER
+═══════════════════════════════════════════════ -->
+<main class="app-wrapper">
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 1 — SUBMIT
+══════════════════════════════════════════════ -->
+<section id="screen-submit" class="screen-view active fade-up">
+    <div style="display:grid;grid-template-columns:220px 1fr 220px;gap:24px;align-items:start;">
+
+        <!-- LEFT SIDEBAR — Feature list -->
+        <aside>
+            <div style="margin-bottom:24px;text-align:center;">
+                <!-- Hero logo/illustration -->
+                <div style="width:120px;height:120px;margin:0 auto 12px;border-radius:28px;background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(6,214,160,0.2));display:flex;align-items:center;justify-content:center;border:1px solid rgba(139,92,246,0.3);box-shadow:0 0 40px rgba(139,92,246,0.2),0 0 80px rgba(139,92,246,0.08);">
+                    <div style="font-size:48px;">📄</div>
+                </div>
+                <div style="font-size:18px;font-weight:800;color:#f0f0ff;line-height:1.2;margin-bottom:4px;">BrandCanon</div>
+                <div class="gradient-text-purple" style="font-size:12px;font-weight:600;">AI-Powered Brand Governance</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:rgba(247,37,133,0.15);color:#f72585;">⚡</div>
+                    <div>
+                        <div style="font-size:12px;font-weight:700;color:#f0f0ff;">AI Review</div>
+                        <div style="font-size:11px;color:#6b7280;line-height:1.4;">Detects policy and brand violations</div>
                     </div>
-                    <p class="text-xs text-slate-400">Pre-publication Brand Governance</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:rgba(139,92,246,0.15);color:#c4b5fd;">🗂</div>
+                    <div>
+                        <div style="font-size:12px;font-weight:700;color:#f0f0ff;">Evidence-backed</div>
+                        <div style="font-size:11px;color:#6b7280;line-height:1.4;">Shows exact guideline sources</div>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:rgba(76,201,240,0.15);color:#4cc9f0;">✏️</div>
+                    <div>
+                        <div style="font-size:12px;font-weight:700;color:#f0f0ff;">Fix &amp; Diff</div>
+                        <div style="font-size:11px;color:#6b7280;line-height:1.4;">Smart, intent-preserving edits</div>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:rgba(6,214,160,0.15);color:#06d6a0;">🛡</div>
+                    <div>
+                        <div style="font-size:12px;font-weight:700;color:#f0f0ff;">Compliant Publishing</div>
+                        <div style="font-size:11px;color:#6b7280;line-height:1.4;">Human approval with audit trail</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER — Main Form -->
+        <div>
+            <!-- Section header -->
+            <div class="glass" style="padding:24px 28px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+                <div>
+                    <h1 style="font-size:26px;font-weight:800;line-height:1.2;margin:0 0 6px;">
+                        Submit Content for
+                        <span class="gradient-text-purple"> Brand Review</span>
+                    </h1>
+                    <p style="font-size:13px;color:#6b7280;margin:0;">Review drafts against approved guidelines, verified facts, and terminology before publishing.</p>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                    <span style="font-size:11px;color:#6b7280;font-weight:600;">Quick load:</span>
+                    <button onclick="loadSampleDraft('bad')" class="chip-bad">💥 Bad Example</button>
+                    <button onclick="loadSampleDraft('medium')" class="chip-medium">⚠ Medium Risk</button>
+                    <button onclick="loadSampleDraft('clean')" class="chip-clean">✓ Clean</button>
                 </div>
             </div>
 
-            <!-- STEPPER NAVIGATION -->
-            <nav class="hidden md:flex items-center space-x-1" aria-label="Workflow Steps">
-                <button id="step-btn-submit" onclick="navigateTo('submit')" class="nav-step-btn px-3 py-1.5 rounded-md text-sm font-medium text-white bg-slate-800/90 hover:bg-slate-700 flex items-center space-x-1.5 transition">
-                    <span class="w-5 h-5 rounded-full bg-slate-700 text-cyan-300 text-xs flex items-center justify-center font-bold">1</span>
-                    <span>Submit</span>
-                </button>
-                <span class="text-slate-600">→</span>
-                <button id="step-btn-review" onclick="navigateTo('review')" class="nav-step-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 flex items-center space-x-1.5 transition">
-                    <span class="w-5 h-5 rounded-full bg-slate-700 text-slate-300 text-xs flex items-center justify-center font-bold">2</span>
-                    <span>Review</span>
-                </button>
-                <span class="text-slate-600">→</span>
-                <button id="step-btn-diff" onclick="navigateTo('diff')" class="nav-step-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 flex items-center space-x-1.5 transition">
-                    <span class="w-5 h-5 rounded-full bg-slate-700 text-slate-300 text-xs flex items-center justify-center font-bold">3</span>
-                    <span>Fix & Diff</span>
-                </button>
-                <span class="text-slate-600">→</span>
-                <button id="step-btn-approval" onclick="navigateTo('approval')" class="nav-step-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 flex items-center space-x-1.5 transition">
-                    <span class="w-5 h-5 rounded-full bg-slate-700 text-slate-300 text-xs flex items-center justify-center font-bold">4</span>
-                    <span>Approve</span>
-                </button>
-                <button id="step-btn-canon" onclick="navigateTo('canon')" class="ml-3 px-3 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:text-cyan-300 hover:bg-slate-800 transition">
-                    📖 Canon Registry
-                </button>
-            </nav>
+            <!-- Form card -->
+            <div class="glass" style="padding:24px 28px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                    <!-- Title -->
+                    <div>
+                        <label class="field-label">
+                            <span class="field-label-icon">📋</span> Title / Campaign
+                            <span style="color:#ef4444;margin-left:2px;">*</span>
+                        </label>
+                        <input type="text" id="input-title" class="field-dark" placeholder="e.g. FinEdge Plus Q4 Announcement">
+                    </div>
+                    <!-- Channel -->
+                    <div>
+                        <label class="field-label">
+                            <span class="field-label-icon">📡</span> Publishing Channel
+                            <span style="color:#ef4444;margin-left:2px;">*</span>
+                        </label>
+                        <select id="input-channel" class="field-dark" style="cursor:pointer;">
+                            <option value="twitter">𝕏 / Twitter</option>
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="blog">Company Blog</option>
+                            <option value="email">Email Newsletter</option>
+                            <option value="ad">Paid Advertising</option>
+                        </select>
+                    </div>
+                </div>
 
-            <!-- RIGHT CONTROLS: Try Demo, Confidential Mode & Role Switcher -->
-            <div class="flex items-center space-x-3">
-                <!-- TRY THE DEMO BUTTON (1-Click Worked Example) -->
-                <button onclick="loadWorkedExampleDemo()" class="bg-finedge-cyan hover:bg-emerald-400 text-finedge-navy font-semibold px-3 py-1.5 rounded-lg text-sm shadow flex items-center space-x-1.5 transition active:scale-95" title="Loads the worked example and reviews it immediately">
-                    <span>⚡ Try the demo</span>
-                </button>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                    <!-- Audience -->
+                    <div>
+                        <label class="field-label">
+                            <span class="field-label-icon">👥</span> Target Audience
+                        </label>
+                        <input type="text" id="input-audience" class="field-dark" placeholder="e.g. prospective retail investors">
+                    </div>
+                    <!-- CTA -->
+                    <div>
+                        <label class="field-label">
+                            <span class="field-label-icon">🎯</span> Intended Call-To-Action (CTA)
+                        </label>
+                        <input type="text" id="input-cta" class="field-dark" placeholder="e.g. Join FinEdge Plus">
+                    </div>
+                </div>
 
-                <!-- CONFIDENTIAL MODE TOGGLE -->
-                <label class="hidden lg:flex items-center space-x-1.5 cursor-pointer text-xs text-slate-300 bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-700">
-                    <input type="checkbox" id="confidential-mode-toggle" class="rounded text-finedge-cyan focus:ring-finedge-cyan h-4 w-4">
-                    <span title="Guarantees zero external network requests & redacts sensitive fields">Confidential Mode</span>
-                </label>
+                <!-- Creator Intent -->
+                <div style="margin-bottom:16px;">
+                    <label class="field-label">
+                        <span class="field-label-icon">💡</span> Creator Intent / Key Message
+                    </label>
+                    <input type="text" id="input-intent" class="field-dark" placeholder="e.g. drive sign-ups with an attractive offer and social proof">
+                </div>
 
-                <!-- DEMO ROLE SWITCHER -->
-                <div class="flex items-center space-x-1.5 bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700">
-                    <span class="text-xs text-slate-400 font-medium">Role:</span>
-                    <select id="role-selector" onchange="onRoleChanged()" class="bg-slate-900 text-white text-xs rounded border-slate-700 py-1 px-2 font-medium focus:outline-none focus:ring-1 focus:ring-finedge-cyan">
-                        <option value="Creator">Creator</option>
-                        <option value="Manager">Manager</option>
-                        <option value="Compliance Reviewer">Compliance Reviewer</option>
-                        <option value="Admin">Admin</option>
-                    </select>
+                <!-- Draft Content -->
+                <div style="margin-bottom:14px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                        <label class="field-label" style="margin:0;">
+                            <span class="field-label-icon">📝</span> Draft Content (Text or Document)
+                        </label>
+                        <span style="font-size:11px;color:#6b7280;">Supports: .txt, .md, .docx, .pdf, .html (&lt; 2 MB)</span>
+                    </div>
+                    <textarea id="input-text" rows="7" class="field-dark" style="font-family:'Inter',monospace;resize:vertical;" placeholder="Paste your draft copy here or drag & drop a document file..."></textarea>
+                </div>
+
+                <!-- Drop Zone -->
+                <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-upload').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleFileDrop(event)">
+                    <input type="file" id="file-upload" accept=".txt,.md,.docx,.pdf,.html" class="hidden" onchange="handleFileUpload(event)">
+                    <div style="color:#c4b5fd;font-size:20px;margin-bottom:6px;">☁️</div>
+                    <div style="font-size:13px;color:#a0a0c8;">
+                        <span style="color:#8b5cf6;text-decoration:underline;cursor:pointer;font-weight:600;">Browse document file</span>
+                        <span> to upload or drop here</span>
+                    </div>
+                    <span id="file-name-display" style="font-size:11px;color:#6b7280;display:block;margin-top:4px;"></span>
+                </div>
+
+                <!-- Actions -->
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px;">
+                    <button onclick="loadWorkedExampleDemo()" style="background:none;border:none;cursor:pointer;font-size:13px;color:#a0a0c8;display:flex;align-items:center;gap:6px;" onmouseover="this.style.color='#c4b5fd'" onmouseout="this.style.color='#a0a0c8'">
+                        💡 Need an example? Click to load sample draft
+                    </button>
+                    <button id="btn-run-review" onclick="submitContentForReview()" class="btn-primary">
+                        <span>▶</span>
+                        <span>Run Brand Review</span>
+                        <span>→</span>
+                    </button>
                 </div>
             </div>
         </div>
-    </header>
 
-    <!-- MAIN APP CONTAINER -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+        <!-- RIGHT SIDEBAR — Decorative 3D card -->
+        <aside style="display:flex;align-items:flex-start;justify-content:center;padding-top:40px;">
+            <div style="text-align:center;">
+                <!-- Animated document illustration -->
+                <div style="position:relative;width:160px;height:180px;margin:0 auto;">
+                    <!-- Glow platform -->
+                    <div style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:120px;height:20px;background:radial-gradient(ellipse,rgba(139,92,246,0.5),transparent 70%);filter:blur(8px);"></div>
+                    <!-- Document card -->
+                    <div style="position:absolute;inset:0;background:linear-gradient(145deg,rgba(139,92,246,0.25),rgba(76,201,240,0.15));border:1px solid rgba(139,92,246,0.4);border-radius:20px;backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;animation:docFloat 4s ease-in-out infinite;box-shadow:0 0 40px rgba(139,92,246,0.3),0 0 80px rgba(139,92,246,0.1);">
+                        <div style="font-size:72px;filter:drop-shadow(0 0 16px rgba(139,92,246,0.6));">📋</div>
+                    </div>
+                    <!-- Orbiting check icon -->
+                    <div style="position:absolute;bottom:16px;right:-8px;width:44px;height:44px;background:linear-gradient(135deg,#06d6a0,#059669);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(6,214,160,0.6);animation:orbitBounce 3s ease-in-out infinite;">✓</div>
+                </div>
+                <div style="margin-top:20px;">
+                    <div style="font-size:28px;font-weight:900;color:#f0f0ff;letter-spacing:-0.02em;">BC</div>
+                    <div style="font-size:11px;color:#6b7280;margin-top:4px;">Governance Engine</div>
+                </div>
+            </div>
+        </aside>
 
-        <!-- ================= SCREEN 1: SUBMIT SCREEN ================= -->
-        <section id="screen-submit" class="screen-view">
-            <div class="max-w-4xl mx-auto space-y-6">
-                <!-- Header Banner -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-finedge-navy">Submit Content for Brand Review</h1>
-                        <p class="text-sm text-slate-600 mt-1">Review drafts against approved guidelines, verified facts, and terminology before publishing.</p>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs text-slate-500 font-medium">Quick load:</span>
-                        <button onclick="loadSampleDraft('bad')" class="text-xs bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 rounded hover:bg-red-100 font-medium">Bad Example</button>
-                        <button onclick="loadSampleDraft('medium')" class="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded hover:bg-amber-100 font-medium">Medium Risk</button>
-                        <button onclick="loadSampleDraft('clean')" class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded hover:bg-emerald-100 font-medium">Clean</button>
-                    </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 2 — REVIEW & FINDINGS
+══════════════════════════════════════════════ -->
+<section id="screen-review" class="screen-view" style="display:none;">
+
+    <!-- Review summary bar -->
+    <div class="glass" style="padding:16px 24px;margin-bottom:16px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="display:flex;align-items:center;gap:16px;">
+            <div>
+                <h2 id="review-title" style="font-size:18px;font-weight:800;color:#f0f0ff;margin:0 0 4px;">Draft Review</h2>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#6b7280;">
+                    <span id="review-version-badge" style="background:rgba(255,255,255,0.08);color:#a0a0c8;padding:2px 8px;border-radius:6px;font-weight:600;">Version 1</span>
+                    <span>•</span>
+                    <span id="review-channel-badge">Channel: Twitter</span>
+                    <span>•</span>
+                    <span id="review-cta-badge">CTA: Join FinEdge Plus</span>
+                </div>
+            </div>
+            <span id="review-risk-badge" style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;padding:4px 12px;border-radius:20px;" class="tier-1">Tier 1</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span id="badge-count-critical" class="count-badge-critical">0 Critical</span>
+            <span id="badge-count-high" class="count-badge-high">0 High</span>
+            <span id="badge-count-medium" class="count-badge-medium">0 Medium</span>
+            <span id="badge-count-low" class="count-badge-low">0 Low</span>
+            <button onclick="applyAcceptedFixes()" id="btn-apply-fixes" class="btn-apply-fixes">
+                <span>⚡ Apply Accepted Fixes</span>
+                <span id="accepted-count-badge" style="background:rgba(6,214,160,0.3);color:#06d6a0;font-size:10px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;">0</span>
+            </button>
+            <button onclick="submitDraftForApproval()" id="btn-submit-approval" class="btn-secondary" style="font-size:12px;font-weight:700;">
+                Submit for Approval →
+            </button>
+        </div>
+    </div>
+
+    <!-- AI Disclosure Banner -->
+    <div id="ai-disclosure-banner" class="ai-banner" style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-weight:700;color:#c4b5fd;">🛡️ Governance Mode:</span>
+            <span id="ai-mode-text">100% Offline Deterministic Checks (Zero external API keys). Evidence-or-silence verification active.</span>
+        </div>
+        <span style="font-size:11px;color:#6b7280;font-family:monospace;">AI never approves or publishes content</span>
+    </div>
+
+    <!-- Two-column review layout -->
+    <div style="display:grid;grid-template-columns:7fr 5fr;gap:20px;align-items:start;">
+
+        <!-- Left: Document with highlights -->
+        <div class="glass" style="padding:24px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;">Draft Content — click highlights to inspect</span>
+                <span style="font-size:11px;color:#6b7280;">Color + icon = severity</span>
+            </div>
+            <div id="document-text-container" style="color:#d1d5db;font-size:14px;line-height:1.9;white-space:pre-wrap;font-family:'Inter',sans-serif;min-height:400px;">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Right: Finding Cards -->
+        <div style="display:flex;flex-direction:column;gap:12px;max-height:700px;overflow-y:auto;padding-right:4px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;padding:0 2px;">
+                <span>Findings &amp; Suggested Fixes</span>
+                <span id="findings-total-label">0 issues found</span>
+            </div>
+            <div id="finding-cards-container" style="display:flex;flex-direction:column;gap:10px;">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 3 — FIX & DIFF
+══════════════════════════════════════════════ -->
+<section id="screen-diff" class="screen-view" style="display:none;">
+    <div style="max-width:900px;margin:0 auto;">
+        <!-- Header -->
+        <div class="glass" style="padding:20px 28px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+            <div>
+                <h2 style="font-size:20px;font-weight:800;color:#f0f0ff;margin:0 0 4px;">
+                    Version Comparison
+                    <span class="gradient-text-purple"> (Tracked Changes)</span>
+                </h2>
+                <p style="font-size:12px;color:#6b7280;margin:0;">Review edits before final editorial submission.</p>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button onclick="navigateTo('review')" class="btn-secondary">← Back to Review</button>
+                <button onclick="submitDraftForApproval()" class="btn-primary" style="font-size:12px;">Submit for Approval →</button>
+            </div>
+        </div>
+
+        <!-- Diff viewer -->
+        <div class="glass" style="padding:24px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div style="display:flex;align-items:center;gap:16px;font-size:12px;">
+                    <span style="display:flex;align-items:center;gap:6px;">
+                        <span style="width:12px;height:12px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:3px;display:inline-block;"></span>
+                        <span style="color:#a0a0c8;">Removed</span>
+                    </span>
+                    <span style="display:flex;align-items:center;gap:6px;">
+                        <span style="width:12px;height:12px;background:rgba(6,214,160,0.2);border:1px solid rgba(6,214,160,0.4);border-radius:3px;display:inline-block;"></span>
+                        <span style="color:#a0a0c8;">Added</span>
+                    </span>
+                </div>
+                <span id="diff-word-change-badge" style="font-family:monospace;font-size:12px;color:#a0a0c8;">0 words changed</span>
+            </div>
+            <div id="diff-output-container" style="font-size:13px;line-height:2;white-space:pre-wrap;font-family:'Inter',sans-serif;color:#d1d5db;background:rgba(255,255,255,0.02);border-radius:10px;padding:16px;border:1px solid rgba(255,255,255,0.05);">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 4 — APPROVAL QUEUE
+══════════════════════════════════════════════ -->
+<section id="screen-approval" class="screen-view" style="display:none;">
+    <div style="max-width:1100px;margin:0 auto;">
+        <!-- Header -->
+        <div class="glass" style="padding:20px 28px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <div>
+                <h2 style="font-size:20px;font-weight:800;color:#f0f0ff;margin:0 0 4px;">Governance Approval Queue</h2>
+                <p style="font-size:12px;color:#6b7280;margin:0;">Review pending submissions, inspect creator decisions and diffs, and record editorial verdicts.</p>
+            </div>
+            <div id="approval-role-notice" style="background:rgba(76,201,240,0.1);border:1px solid rgba(76,201,240,0.25);border-radius:10px;padding:10px 16px;font-size:12px;color:#93c5fd;">
+                Acting as: <strong id="approval-current-role-label">Creator</strong>. Switch role in header to test approvals.
+            </div>
+        </div>
+
+        <!-- Submissions table -->
+        <div class="glass" style="overflow:hidden;margin-bottom:16px;">
+            <div style="padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;">Submissions</span>
+                <button onclick="loadApprovalQueue()" style="background:none;border:none;cursor:pointer;font-size:12px;color:#8b5cf6;font-weight:600;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">↻ Refresh</button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="dark-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Channel</th>
+                            <th>Risk Tier</th>
+                            <th>Status</th>
+                            <th>Issues</th>
+                            <th style="text-align:right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approval-table-body">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Submission Detail Panel -->
+        <div id="approval-detail-panel" class="glass" style="padding:24px;display:none;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div>
+                    <h3 id="approval-detail-title" style="font-size:18px;font-weight:800;color:#f0f0ff;margin:0 0 6px;">Submission Review</h3>
+                    <span id="approval-detail-tier-badge" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;" class="tier-1">Tier 1</span>
+                </div>
+                <div style="text-align:right;">
+                    <span id="approval-detail-status" style="font-size:12px;color:#6b7280;">Status: Draft</span>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+                <!-- Approved text -->
+                <div>
+                    <span style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;margin-bottom:10px;">Approved Text to Publish</span>
+                    <div id="approval-detail-text" style="padding:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;font-size:13px;color:#d1d5db;white-space:pre-wrap;min-height:120px;"></div>
                 </div>
 
-                <!-- Submission Form -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-5">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Title / Campaign</label>
-                            <input type="text" id="input-title" placeholder="e.g. FinEdge Plus Q4 Announcement" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-finedge-cyan focus:border-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Publishing Channel</label>
-                            <select id="input-channel" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-finedge-cyan">
-                                <option value="twitter">X / Twitter</option>
-                                <option value="linkedin">LinkedIn</option>
-                                <option value="blog">Company Blog</option>
-                                <option value="email">Email Newsletter</option>
-                                <option value="ad">Paid Advertising</option>
-                            </select>
-                        </div>
+                <!-- Decision Box -->
+                <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px;">
+                    <span style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;margin-bottom:12px;">Reviewer Verdict &amp; Governance Action</span>
+
+                    <!-- Tier 3 Alert -->
+                    <div id="tier3-compliance-alert" class="tier3-alert" style="margin-bottom:12px;">
+                        <strong>⚠️ Tier 3 Critical Risk:</strong> This submission contains critical compliance findings.
+                        <em> A Manager cannot approve this alone.</em> Switch role to <strong>Compliance Reviewer</strong> to sign off.
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Target Audience</label>
-                            <input type="text" id="input-audience" placeholder="e.g. prospective retail investors" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-finedge-cyan">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Intended Call-To-Action (CTA)</label>
-                            <input type="text" id="input-cta" placeholder="e.g. Join FinEdge Plus" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-finedge-cyan">
-                        </div>
-                    </div>
+                    <textarea id="approval-comment-input" rows="3" class="field-dark" style="margin-bottom:12px;" placeholder="Enter review notes or change requests (visible to creator)..."></textarea>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Creator Intent / Key Message</label>
-                        <input type="text" id="input-intent" placeholder="e.g. drive sign-ups with an attractive offer and social proof" class="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-finedge-cyan">
-                    </div>
-
-                    <!-- Draft Content Area with File Upload Drag & Drop -->
-                    <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Draft Content (Text or Document)</label>
-                            <span class="text-xs text-slate-500">Supports .txt, .md, .docx, .pdf, .html (&lt;2 MB)</span>
-                        </div>
-                        <textarea id="input-text" rows="7" placeholder="Paste your draft copy here or drag & drop a document file below..." class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-finedge-cyan font-mono leading-relaxed"></textarea>
-                    </div>
-
-                    <!-- File Upload Option -->
-                    <div class="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center hover:border-slate-300 transition">
-                        <input type="file" id="file-upload" accept=".txt,.md,.docx,.pdf,.html" class="hidden" onchange="handleFileUpload(event)">
-                        <label for="file-upload" class="cursor-pointer text-sm text-slate-600 hover:text-finedge-navy font-medium">
-                            📁 <span class="text-blue-600 underline">Browse document file</span> to upload or drop here
-                        </label>
-                        <span id="file-name-display" class="block text-xs text-slate-500 mt-1"></span>
-                    </div>
-
-                    <!-- Submission Action Buttons -->
-                    <div class="flex items-center justify-between pt-2">
-                        <button onclick="loadWorkedExampleDemo()" class="text-sm font-medium text-slate-600 hover:text-finedge-navy flex items-center space-x-1">
-                            <span>✨ Need an example? Click to load sample draft</span>
-                        </button>
-                        <button id="btn-run-review" onclick="submitContentForReview()" class="bg-finedge-navy hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-lg shadow-sm text-sm flex items-center space-x-2 transition">
-                            <span>Run Brand Review</span>
-                            <span>→</span>
-                        </button>
+                    <div style="display:flex;gap:8px;">
+                        <button onclick="executeWorkflowDecision('approved')" id="btn-verdict-approve" class="btn-approve">✓ Approve</button>
+                        <button onclick="executeWorkflowDecision('changes_requested')" id="btn-verdict-changes" class="btn-changes">✎ Changes</button>
+                        <button onclick="executeWorkflowDecision('rejected')" id="btn-verdict-reject" class="btn-reject">✕ Reject</button>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- ================= SCREEN 2: REVIEW & FINDINGS SCREEN ================= -->
-        <section id="screen-review" class="screen-view hidden flex-1 flex flex-col">
-            <!-- Review Summary Bar -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4 flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center space-x-4">
-                    <div>
-                        <h2 id="review-title" class="font-bold text-lg text-finedge-navy">Draft Review</h2>
-                        <div class="flex items-center space-x-2 text-xs text-slate-500 mt-0.5">
-                            <span id="review-version-badge" class="font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Version 1</span>
-                            <span>•</span>
-                            <span id="review-channel-badge">Channel: Twitter</span>
-                            <span>•</span>
-                            <span id="review-cta-badge">CTA: Join FinEdge Plus</span>
-                        </div>
-                    </div>
-                    <!-- Risk Tier Badge -->
-                    <div id="review-risk-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center space-x-1">
-                        <span>Tier 1</span>
-                    </div>
-                </div>
-
-                <!-- Findings Stats & Action -->
-                <div class="flex items-center space-x-3">
-                    <div class="flex items-center space-x-1 text-xs">
-                        <span id="badge-count-critical" class="bg-red-100 text-red-800 font-semibold px-2 py-1 rounded border border-red-200">0 Critical</span>
-                        <span id="badge-count-high" class="bg-amber-100 text-amber-800 font-semibold px-2 py-1 rounded border border-amber-200">0 High</span>
-                        <span id="badge-count-medium" class="bg-blue-100 text-blue-800 font-semibold px-2 py-1 rounded border border-blue-200">0 Medium</span>
-                        <span id="badge-count-low" class="bg-teal-100 text-teal-800 font-semibold px-2 py-1 rounded border border-teal-200">0 Low</span>
-                    </div>
-                    <button onclick="applyAcceptedFixes()" id="btn-apply-fixes" class="bg-finedge-cyan hover:bg-emerald-400 text-finedge-navy font-semibold px-4 py-2 rounded-lg text-xs shadow flex items-center space-x-1.5 transition">
-                        <span>Apply Accepted Fixes</span>
-                        <span id="accepted-count-badge" class="bg-finedge-navy text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
-                    </button>
-                    <button onclick="submitDraftForApproval()" id="btn-submit-approval" class="bg-slate-800 hover:bg-slate-900 text-white font-medium px-4 py-2 rounded-lg text-xs shadow transition">
-                        Submit for Approval →
-                    </button>
-                </div>
-            </div>
-
-            <!-- AI Disclosure & Mode Banner -->
-            <div id="ai-disclosure-banner" class="bg-slate-100 border-l-4 border-slate-600 px-4 py-2.5 rounded-r-lg text-xs text-slate-700 mb-4 flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <span class="font-semibold text-slate-900">🛡️ Governance Mode:</span>
-                    <span id="ai-mode-text">100% Offline Deterministic Checks (Zero external API keys). Evidence-or-silence verification active.</span>
-                </div>
-                <span class="text-slate-500 font-mono text-[11px]">AI never approves or publishes content</span>
-            </div>
-
-            <!-- Two-Column Review Layout -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 items-start">
-                <!-- Left: Document Text with Highlight Spans (col 7) -->
-                <div class="lg:col-span-7 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col h-full min-h-[480px]">
-                    <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Draft Content (Click highlighted spans to inspect)</span>
-                        <span id="highlight-legend" class="text-xs text-slate-400">Color + icon indicates severity</span>
-                    </div>
-                    <div id="document-text-container" class="flex-1 text-slate-800 text-base leading-relaxed whitespace-pre-wrap font-sans">
-                        <!-- Populated dynamically with highlighted text spans -->
-                    </div>
-                </div>
-
-                <!-- Right: Finding Cards (col 5) -->
-                <div class="lg:col-span-5 flex flex-col space-y-4 max-h-[750px] overflow-y-auto pr-1">
-                    <div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider px-1">
-                        <span>Findings & Suggested Fixes</span>
-                        <span id="findings-total-label">0 issues found</span>
-                    </div>
-                    <div id="finding-cards-container" class="space-y-3">
-                        <!-- Populated dynamically with finding cards -->
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= SCREEN 3: FIX & DIFF SCREEN ================= -->
-        <section id="screen-diff" class="screen-view hidden">
-            <div class="max-w-5xl mx-auto space-y-6">
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-xl font-bold text-finedge-navy">Version Comparison (Tracked Changes)</h2>
-                        <p class="text-xs text-slate-600 mt-1">Review edits made by applying accepted fixes before final editorial submission.</p>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <button onclick="navigateTo('review')" class="text-xs text-slate-600 hover:text-finedge-navy px-3 py-1.5 rounded border border-slate-300">← Back to Review</button>
-                        <button onclick="submitDraftForApproval()" class="bg-finedge-navy hover:bg-slate-800 text-white font-semibold px-4 py-2 rounded-lg text-xs shadow transition">
-                            Submit for Approval →
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
-                    <div class="flex items-center justify-between text-xs text-slate-500 pb-3 border-b border-slate-100">
-                        <div class="flex items-center space-x-4">
-                            <span class="flex items-center space-x-1"><span class="w-3 h-3 bg-red-100 border border-red-300 rounded inline-block"></span> <span>Removed</span></span>
-                            <span class="flex items-center space-x-1"><span class="w-3 h-3 bg-emerald-100 border border-emerald-300 rounded inline-block"></span> <span>Added</span></span>
-                        </div>
-                        <span id="diff-word-change-badge" class="font-mono text-slate-700">0 words changed</span>
-                    </div>
-
-                    <div id="diff-output-container" class="p-4 bg-slate-50 rounded-lg text-sm leading-relaxed whitespace-pre-wrap font-sans border border-slate-200">
-                        <!-- Populated with diff chunks -->
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= SCREEN 4: APPROVAL QUEUE SCREEN ================= -->
-        <section id="screen-approval" class="screen-view hidden">
-            <div class="max-w-6xl mx-auto space-y-6">
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-finedge-navy">Governance Approval Queue</h2>
-                        <p class="text-xs text-slate-600 mt-1">Review pending submissions, inspect creator decisions and diffs, and record editorial verdicts.</p>
-                    </div>
-                    <!-- Role Notice Banner -->
-                    <div id="approval-role-notice" class="bg-blue-50 border border-blue-200 rounded-lg px-3.5 py-2 text-xs text-blue-800">
-                        Acting as: <strong id="approval-current-role-label">Creator</strong>. Switch role in header to test approvals.
-                    </div>
-                </div>
-
-                <!-- Submissions Table -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="px-6 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                        <span class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Submissions</span>
-                        <button onclick="loadApprovalQueue()" class="text-xs text-blue-600 hover:underline">Refresh list</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-slate-200 text-sm">
-                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
-                                <tr>
-                                    <th class="px-6 py-3 text-left">Title</th>
-                                    <th class="px-6 py-3 text-left">Channel</th>
-                                    <th class="px-6 py-3 text-left">Risk Tier</th>
-                                    <th class="px-6 py-3 text-left">Status</th>
-                                    <th class="px-6 py-3 text-left">Issues</th>
-                                    <th class="px-6 py-3 text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="approval-table-body" class="divide-y divide-slate-100">
-                                <!-- Populated dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Selected Submission Inspector & Decision Console -->
-                <div id="approval-detail-panel" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-5 hidden">
-                    <div class="flex items-center justify-between pb-4 border-b border-slate-200">
-                        <div>
-                            <h3 id="approval-detail-title" class="font-bold text-lg text-finedge-navy">Submission Review</h3>
-                            <span id="approval-detail-tier-badge" class="inline-block mt-1 text-xs font-bold px-2 py-0.5 rounded">Tier 1</span>
-                        </div>
-                        <div class="text-right text-xs text-slate-500">
-                            <span id="approval-detail-status">Status: Draft</span>
-                        </div>
-                    </div>
-
-                    <!-- Submission Text & Decision Notes -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Approved Text to Publish</span>
-                            <div id="approval-detail-text" class="p-3.5 bg-slate-50 rounded-lg text-sm border border-slate-200 whitespace-pre-wrap font-sans"></div>
-                        </div>
-
-                        <!-- Reviewer Decision Box -->
-                        <div class="space-y-4 bg-slate-50/70 p-4 rounded-xl border border-slate-200">
-                            <span class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Reviewer Verdict & Governance Action</span>
-                            
-                            <!-- Tier 3 Compliance Gate Alert -->
-                            <div id="tier3-compliance-alert" class="hidden bg-red-50 border-l-4 border-red-500 p-3 text-xs text-red-800 rounded-r">
-                                <strong>⚠️ Tier 3 Critical Compliance Risk:</strong> This submission contains critical compliance findings. <em>A Manager cannot approve this alone.</em> Switch role to <strong>Compliance Reviewer</strong> to sign off.
-                            </div>
-
-                            <textarea id="approval-comment-input" rows="3" placeholder="Enter review notes or change requests (visible to creator)..." class="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-1 focus:ring-finedge-cyan"></textarea>
-
-                            <div class="flex items-center space-x-2">
-                                <button onclick="executeWorkflowDecision('approved')" id="btn-verdict-approve" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-3 rounded-lg text-xs shadow transition">
-                                    ✓ Approve Content
-                                </button>
-                                <button onclick="executeWorkflowDecision('changes_requested')" id="btn-verdict-changes" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-3 rounded-lg text-xs shadow transition">
-                                    ✎ Request Changes
-                                </button>
-                                <button onclick="executeWorkflowDecision('rejected')" id="btn-verdict-reject" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-3 rounded-lg text-xs shadow transition">
-                                    ✕ Reject
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Comments & Audit Timeline -->
-                    <div class="pt-4 border-t border-slate-200">
-                        <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Audit Trail & Comments</span>
-                        <div id="approval-timeline-container" class="space-y-2 text-xs text-slate-600">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= SCREEN 5: CANON REGISTRY SCREEN ================= -->
-        <section id="screen-canon" class="screen-view hidden">
-            <div class="max-w-6xl mx-auto space-y-6">
-                <!-- Header -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-finedge-navy">Brand Canon Knowledge Registry</h2>
-                        <p class="text-xs text-slate-600 mt-1">Grounding source of truth: Rules, Facts, Terminology, and Brand Design Assets.</p>
-                    </div>
-                    <!-- Header Controls: WCAG Tool + Add Rule + Add Fact -->
-                    <div class="flex items-center space-x-2">
-                        <button onclick="openContrastModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 shadow-sm flex items-center space-x-1">
-                            <span>🎨 Contrast Tool</span>
-                        </button>
-                        <button onclick="openAddRuleModal()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm flex items-center space-x-1">
-                            <span>+ Add Rule</span>
-                        </button>
-                        <button onclick="openAddFactModal()" class="bg-finedge-cyan hover:bg-emerald-400 text-finedge-navy text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm flex items-center space-x-1">
-                            <span>+ Add Fact</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tabs: Rules | Facts | Terms | Assets -->
-                <div class="flex border-b border-slate-200 space-x-4">
-                    <button onclick="switchCanonTab('rules')" id="canon-tab-rules" class="canon-tab py-2 px-3 text-sm font-semibold border-b-2 border-finedge-navy text-finedge-navy">Rules (14)</button>
-                    <button onclick="switchCanonTab('facts')" id="canon-tab-facts" class="canon-tab py-2 px-3 text-sm font-medium text-slate-500 hover:text-slate-800">Facts (8)</button>
-                    <button onclick="switchCanonTab('terms')" id="canon-tab-terms" class="canon-tab py-2 px-3 text-sm font-medium text-slate-500 hover:text-slate-800">Terminology (11)</button>
-                    <button onclick="switchCanonTab('assets')" id="canon-tab-assets" class="canon-tab py-2 px-3 text-sm font-medium text-slate-500 hover:text-slate-800">Assets & Palette (7)</button>
-                </div>
-
-                <!-- Canon Tab Contents -->
-                <div id="canon-content-container" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <!-- Audit Trail -->
+            <div style="padding-top:20px;margin-top:20px;border-top:1px solid rgba(255,255,255,0.06);">
+                <span style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;margin-bottom:12px;">Audit Trail &amp; Comments</span>
+                <div id="approval-timeline-container" style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:#a0a0c8;">
                     <!-- Populated dynamically -->
                 </div>
             </div>
-        </section>
+        </div>
+    </div>
+</section>
 
-    </main>
-
-    <!-- DISMISSAL REASON MODAL -->
-    <div id="dismiss-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full mx-4 p-6 space-y-4">
-            <h3 class="font-bold text-base text-finedge-navy">Dismiss Guideline Finding</h3>
-            <p class="text-xs text-slate-600">Brand governance requires an explicit rationale for overriding or dismissing brand rules. This reason is logged to the audit trail.</p>
-            <input type="hidden" id="dismiss-finding-id">
+<!-- ══════════════════════════════════════════════
+     SCREEN 5 — CANON REGISTRY
+══════════════════════════════════════════════ -->
+<section id="screen-canon" class="screen-view" style="display:none;">
+    <div style="max-width:1100px;margin:0 auto;">
+        <!-- Header -->
+        <div class="glass" style="padding:20px 28px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
             <div>
-                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Reason for dismissal <span class="text-red-500">*</span></label>
-                <textarea id="dismiss-reason-input" rows="3" placeholder="e.g. Approved exception by marketing leadership for Q4 test..." class="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-1 focus:ring-finedge-cyan"></textarea>
+                <h2 style="font-size:20px;font-weight:800;color:#f0f0ff;margin:0 0 4px;">
+                    Brand Canon
+                    <span class="gradient-text-purple"> Knowledge Registry</span>
+                </h2>
+                <p style="font-size:12px;color:#6b7280;margin:0;">Grounding source of truth: Rules, Facts, Terminology, and Brand Design Assets.</p>
             </div>
-            <div class="flex items-center justify-end space-x-2 pt-2">
-                <button onclick="closeDismissModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100">Cancel</button>
-                <button onclick="confirmDismissFinding()" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-1.5 rounded-lg text-xs shadow transition">Confirm Dismissal</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- WCAG CONTRAST TOOL MODAL -->
-    <div id="contrast-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full mx-4 p-6 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="font-bold text-base text-finedge-navy">WCAG AA Contrast Calculator</h3>
-                <button onclick="closeContrastModal()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
-            </div>
-            <p class="text-xs text-slate-600">Calculates relative luminance according to WCAG 2.1 specs. Standard text requires at least 4.5:1 ratio.</p>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Foreground Hex</label>
-                    <input type="text" id="contrast-fg" value="#0A192F" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded font-mono">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Background Hex</label>
-                    <input type="text" id="contrast-bg" value="#FFFFFF" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded font-mono">
-                </div>
-            </div>
-            <button onclick="runContrastCheck()" class="w-full bg-finedge-navy text-white text-xs font-semibold py-2 rounded-lg hover:bg-slate-800 transition">Calculate Ratio</button>
-            <div id="contrast-result-box" class="p-3 bg-slate-50 rounded-lg text-xs text-slate-800 border border-slate-200 hidden"></div>
-        </div>
-    </div>
-
-    <!-- ADD RULE MODAL -->
-    <div id="add-rule-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-lg w-full mx-4 p-6 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="font-bold text-base text-finedge-navy">Add New Brand Rule</h3>
-                <button onclick="closeAddRuleModal()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
-            </div>
-            <div class="space-y-3 text-xs">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold text-slate-700 uppercase mb-1">Rule ID</label>
-                        <input type="text" id="new-rule-id" placeholder="e.g. CMP-005" class="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 uppercase mb-1">Category</label>
-                        <select id="new-rule-category" class="w-full px-2.5 py-1.5 border border-slate-300 rounded">
-                            <option value="compliance">compliance</option>
-                            <option value="terminology">terminology</option>
-                            <option value="tone">tone</option>
-                            <option value="messaging">messaging</option>
-                            <option value="accessibility">accessibility</option>
-                            <option value="visual">visual</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold text-slate-700 uppercase mb-1">Severity</label>
-                        <select id="new-rule-severity" class="w-full px-2.5 py-1.5 border border-slate-300 rounded">
-                            <option value="critical">critical</option>
-                            <option value="high">high</option>
-                            <option value="medium" selected>medium</option>
-                            <option value="low">low</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 uppercase mb-1">Regex Pattern (Optional)</label>
-                        <input type="text" id="new-rule-pattern" placeholder="e.g. (?i)\\b(secret trick)\\b" class="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono">
-                    </div>
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 uppercase mb-1">Rule Text</label>
-                    <textarea id="new-rule-text" rows="2" placeholder="State the rule requirement clearly..." class="w-full px-2.5 py-1.5 border border-slate-300 rounded"></textarea>
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 uppercase mb-1">Fix Hint</label>
-                    <input type="text" id="new-rule-fix" placeholder="Suggested fix hint for the author..." class="w-full px-2.5 py-1.5 border border-slate-300 rounded">
-                </div>
-            </div>
-            <div class="flex items-center justify-end space-x-2 pt-2">
-                <button onclick="closeAddRuleModal()" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded">Cancel</button>
-                <button onclick="submitNewRule()" class="bg-finedge-navy hover:bg-slate-800 text-white font-semibold px-4 py-1.5 rounded text-xs shadow">Save Rule</button>
+            <div style="display:flex;gap:10px;">
+                <button onclick="openContrastModal()" class="btn-secondary" style="display:flex;align-items:center;gap:6px;">
+                    🎨 Contrast Tool
+                </button>
+                <button onclick="openAddRuleModal()" class="btn-secondary" style="display:flex;align-items:center;gap:6px;border-color:rgba(139,92,246,0.3);color:#c4b5fd;">
+                    + Add Rule
+                </button>
+                <button onclick="openAddFactModal()" class="btn-primary" style="font-size:12px;padding:8px 16px;">
+                    + Add Fact
+                </button>
             </div>
         </div>
-    </div>
 
-    <!-- ADD FACT MODAL -->
-    <div id="add-fact-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-lg w-full mx-4 p-6 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="font-bold text-base text-finedge-navy">Add Verified Brand Fact</h3>
-                <button onclick="closeAddFactModal()" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
-            </div>
-            <div class="space-y-3 text-xs">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold text-slate-700 uppercase mb-1">Fact ID</label>
-                        <input type="text" id="new-fact-id" placeholder="e.g. F-025" class="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 uppercase mb-1">Approved Value</label>
-                        <input type="text" id="new-fact-value" placeholder="e.g. 50000 or 15" class="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono">
-                    </div>
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 uppercase mb-1">Fact Claim Description</label>
-                    <input type="text" id="new-fact-claim" placeholder="e.g. Active European subscriber milestone" class="w-full px-2.5 py-1.5 border border-slate-300 rounded">
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 uppercase mb-1">Linked Keywords (comma-separated)</label>
-                    <input type="text" id="new-fact-keywords" placeholder="e.g. users, subscribers, members" class="w-full px-2.5 py-1.5 border border-slate-300 rounded">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-semibold text-slate-700 uppercase mb-1">Valid From</label>
-                        <input type="date" id="new-fact-valid" value="2026-10-01" class="w-full px-2.5 py-1.5 border border-slate-300 rounded">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 uppercase mb-1">Expires On</label>
-                        <input type="date" id="new-fact-expires" value="2027-03-31" class="w-full px-2.5 py-1.5 border border-slate-300 rounded">
-                    </div>
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 uppercase mb-1">Owner & Verification Source</label>
-                    <input type="text" id="new-fact-owner" placeholder="e.g. VP Growth / https://internal.finedge.com/reports" class="w-full px-2.5 py-1.5 border border-slate-300 rounded">
-                </div>
-            </div>
-            <div class="flex items-center justify-end space-x-2 pt-2">
-                <button onclick="closeAddFactModal()" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded">Cancel</button>
-                <button onclick="submitNewFact()" class="bg-finedge-cyan hover:bg-emerald-400 text-finedge-navy font-semibold px-4 py-1.5 rounded text-xs shadow">Save Fact</button>
-            </div>
+        <!-- Tabs -->
+        <div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:0;padding:0 4px;">
+            <button onclick="switchCanonTab('rules')" id="canon-tab-rules" class="canon-tab active">Rules (14)</button>
+            <button onclick="switchCanonTab('facts')" id="canon-tab-facts" class="canon-tab">Facts (8)</button>
+            <button onclick="switchCanonTab('terms')" id="canon-tab-terms" class="canon-tab">Terminology (11)</button>
+            <button onclick="switchCanonTab('assets')" id="canon-tab-assets" class="canon-tab">Assets &amp; Palette (7)</button>
+        </div>
+
+        <!-- Canon content -->
+        <div id="canon-content-container" class="glass" style="padding:24px;border-radius:0 0 16px 16px;border-top:none;">
+            <!-- Populated dynamically -->
         </div>
     </div>
+</section>
 
-    <!-- Scripts -->
-    <script src="/static/js/app.js"></script>
-    <script src="/static/js/review_ui.js"></script>
+</main>
+
+<!-- ═══════════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════ -->
+
+<!-- Dismiss Reason Modal -->
+<div id="dismiss-modal" class="modal-backdrop" style="display:none;">
+    <div class="modal-box">
+        <h3 style="font-size:16px;font-weight:800;color:#f0f0ff;margin:0 0 8px;">Dismiss Guideline Finding</h3>
+        <p style="font-size:12px;color:#6b7280;margin:0 0 16px;">Brand governance requires an explicit rationale for overriding brand rules. This reason is logged to the audit trail.</p>
+        <input type="hidden" id="dismiss-finding-id">
+        <label class="field-label" style="margin-bottom:8px;">
+            Reason for dismissal <span style="color:#ef4444;">*</span>
+        </label>
+        <textarea id="dismiss-reason-input" rows="3" class="field-dark" style="margin-bottom:16px;" placeholder="e.g. Approved exception by marketing leadership for Q4 test..."></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+            <button onclick="closeDismissModal()" class="btn-secondary">Cancel</button>
+            <button onclick="confirmDismissFinding()" class="btn-reject" style="flex:none;padding:8px 16px;">Confirm Dismissal</button>
+        </div>
+    </div>
+</div>
+
+<!-- WCAG Contrast Tool Modal -->
+<div id="contrast-modal" class="modal-backdrop" style="display:none;">
+    <div class="modal-box">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <h3 style="font-size:16px;font-weight:800;color:#f0f0ff;margin:0;">WCAG AA Contrast Calculator</h3>
+            <button onclick="closeContrastModal()" style="background:none;border:none;cursor:pointer;font-size:18px;color:#6b7280;" onmouseover="this.style.color='#f0f0ff'" onmouseout="this.style.color='#6b7280'">✕</button>
+        </div>
+        <p style="font-size:12px;color:#6b7280;margin:0 0 16px;">WCAG 2.1 relative luminance. Standard text requires at least 4.5:1 ratio.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+            <div>
+                <label class="field-label">Foreground Hex</label>
+                <input type="text" id="contrast-fg" value="#8b5cf6" class="field-dark" style="font-family:monospace;">
+            </div>
+            <div>
+                <label class="field-label">Background Hex</label>
+                <input type="text" id="contrast-bg" value="#0a0b1a" class="field-dark" style="font-family:monospace;">
+            </div>
+        </div>
+        <button onclick="runContrastCheck()" class="btn-primary" style="width:100%;justify-content:center;margin-bottom:12px;">Calculate Ratio</button>
+        <div id="contrast-result-box" style="padding:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;font-size:12px;color:#a0a0c8;display:none;"></div>
+    </div>
+</div>
+
+<!-- Add Rule Modal -->
+<div id="add-rule-modal" class="modal-backdrop" style="display:none;">
+    <div class="modal-box modal-box-lg">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <h3 style="font-size:16px;font-weight:800;color:#f0f0ff;margin:0;">Add New Brand Rule</h3>
+            <button onclick="closeAddRuleModal()" style="background:none;border:none;cursor:pointer;font-size:18px;color:#6b7280;" onmouseover="this.style.color='#f0f0ff'" onmouseout="this.style.color='#6b7280'">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                    <label class="field-label">Rule ID</label>
+                    <input type="text" id="new-rule-id" class="field-dark" placeholder="e.g. CMP-005" style="font-family:monospace;">
+                </div>
+                <div>
+                    <label class="field-label">Category</label>
+                    <select id="new-rule-category" class="field-dark" style="cursor:pointer;">
+                        <option value="compliance">compliance</option>
+                        <option value="terminology">terminology</option>
+                        <option value="tone">tone</option>
+                        <option value="messaging">messaging</option>
+                        <option value="accessibility">accessibility</option>
+                        <option value="visual">visual</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                    <label class="field-label">Severity</label>
+                    <select id="new-rule-severity" class="field-dark" style="cursor:pointer;">
+                        <option value="critical">critical</option>
+                        <option value="high">high</option>
+                        <option value="medium" selected>medium</option>
+                        <option value="low">low</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="field-label">Regex Pattern (Optional)</label>
+                    <input type="text" id="new-rule-pattern" class="field-dark" placeholder="e.g. (?i)\\b(secret trick)\\b" style="font-family:monospace;">
+                </div>
+            </div>
+            <div>
+                <label class="field-label">Rule Text</label>
+                <textarea id="new-rule-text" rows="2" class="field-dark" placeholder="State the rule requirement clearly..."></textarea>
+            </div>
+            <div>
+                <label class="field-label">Fix Hint</label>
+                <input type="text" id="new-rule-fix" class="field-dark" placeholder="Suggested fix hint for the author...">
+            </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+            <button onclick="closeAddRuleModal()" class="btn-secondary">Cancel</button>
+            <button onclick="submitNewRule()" class="btn-primary" style="font-size:12px;">Save Rule</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Fact Modal -->
+<div id="add-fact-modal" class="modal-backdrop" style="display:none;">
+    <div class="modal-box modal-box-lg">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <h3 style="font-size:16px;font-weight:800;color:#f0f0ff;margin:0;">Add Verified Brand Fact</h3>
+            <button onclick="closeAddFactModal()" style="background:none;border:none;cursor:pointer;font-size:18px;color:#6b7280;" onmouseover="this.style.color='#f0f0ff'" onmouseout="this.style.color='#6b7280'">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                    <label class="field-label">Fact ID</label>
+                    <input type="text" id="new-fact-id" class="field-dark" placeholder="e.g. F-025" style="font-family:monospace;">
+                </div>
+                <div>
+                    <label class="field-label">Approved Value</label>
+                    <input type="text" id="new-fact-value" class="field-dark" placeholder="e.g. 50000 or 15" style="font-family:monospace;">
+                </div>
+            </div>
+            <div>
+                <label class="field-label">Fact Claim Description</label>
+                <input type="text" id="new-fact-claim" class="field-dark" placeholder="e.g. Active European subscriber milestone">
+            </div>
+            <div>
+                <label class="field-label">Linked Keywords (comma-separated)</label>
+                <input type="text" id="new-fact-keywords" class="field-dark" placeholder="e.g. users, subscribers, members">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                    <label class="field-label">Valid From</label>
+                    <input type="date" id="new-fact-valid" value="2026-10-01" class="field-dark">
+                </div>
+                <div>
+                    <label class="field-label">Expires On</label>
+                    <input type="date" id="new-fact-expires" value="2027-03-31" class="field-dark">
+                </div>
+            </div>
+            <div>
+                <label class="field-label">Owner &amp; Verification Source</label>
+                <input type="text" id="new-fact-owner" class="field-dark" placeholder="e.g. VP Growth / https://internal.finedge.com/reports">
+            </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+            <button onclick="closeAddFactModal()" class="btn-secondary">Cancel</button>
+            <button onclick="submitNewFact()" class="btn-primary" style="font-size:12px;">Save Fact</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="hidden"></div>
+
+<!-- ── Keyframe animations injected here for reuse ── -->
+<style>
+@keyframes docFloat {
+    0%, 100% { transform: translateY(0) rotateY(0deg); }
+    50%       { transform: translateY(-12px) rotateY(5deg); }
+}
+@keyframes orbitBounce {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50%       { transform: scale(1.1) rotate(10deg); }
+}
+
+/* override Tailwind hidden utility to work with our modals */
+.hidden { display: none !important; }
+
+/* Screen active state */
+.screen-view { display: none; }
+.screen-view.active { display: block; }
+</style>
+
+<!-- Scripts -->
+<script src="/static/js/app.js"></script>
+<script src="/static/js/review_ui.js"></script>
 </body>
 </html>

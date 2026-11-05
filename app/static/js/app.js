@@ -38,7 +38,8 @@ function onRoleChanged() {
     state.currentRole = sel.value;
     localStorage.setItem("brandcanon_role", state.currentRole);
     updateRoleIndicator();
-    if (!document.getElementById("screen-approval").classList.contains("hidden")) {
+    if (document.getElementById("screen-approval").style.display !== "none" &&
+        document.getElementById("screen-approval").style.display !== "") {
         loadApprovalQueue();
     }
 }
@@ -50,18 +51,26 @@ function updateRoleIndicator() {
 
 // Navigation Stepper
 function navigateTo(screenId) {
-    document.querySelectorAll(".screen-view").forEach(el => el.classList.add("hidden"));
+    // Hide all screens
+    document.querySelectorAll(".screen-view").forEach(el => {
+        el.style.display = "none";
+        el.classList.remove("active");
+    });
+    // Show target screen
     const target = document.getElementById(`screen-${screenId}`);
-    if (target) target.classList.remove("hidden");
+    if (target) {
+        target.style.display = "block";
+        target.classList.add("active", "fade-up");
+    }
 
-    // Stepper button styles
-    ["submit", "review", "diff", "approval"].forEach(step => {
+    // Update stepper button active states
+    ["submit", "review", "diff", "approval", "canon"].forEach(step => {
         const btn = document.getElementById(`step-btn-${step}`);
         if (!btn) return;
         if (step === screenId) {
-            btn.className = "nav-step-btn px-3 py-1.5 rounded-md text-sm font-medium text-white bg-slate-800 border-b-2 border-finedge-cyan flex items-center space-x-1.5";
+            btn.classList.add("active");
         } else {
-            btn.className = "nav-step-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 flex items-center space-x-1.5 transition";
+            btn.classList.remove("active");
         }
     });
 
@@ -124,6 +133,13 @@ async function handleFileUpload(event) {
         const text = await file.text();
         document.getElementById("input-text").value = text;
     }
+}
+
+function handleFileDrop(event) {
+    event.preventDefault();
+    document.getElementById("drop-zone").classList.remove("drag-over");
+    const file = event.dataTransfer.files[0];
+    if (file) handleFileUpload({ target: { files: [file] } });
 }
 
 // Submit Content & Run Review Engine
@@ -199,13 +215,16 @@ function renderReviewScreen() {
     const riskBadge = document.getElementById("review-risk-badge");
     const tier = state.currentSubmission.risk_tier;
     if (tier === "Tier 3") {
-        riskBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-800 border border-red-300";
-        riskBadge.innerHTML = "<span>⚠️ Tier 3 (Critical Compliance)</span>";
+        riskBadge.className = "tier-3";
+        riskBadge.style.cssText = "font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;padding:4px 12px;border-radius:20px;";
+        riskBadge.innerHTML = "<span>⚠️ Tier 3 (Critical)</span>";
     } else if (tier === "Tier 2") {
-        riskBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300";
+        riskBadge.className = "tier-2";
+        riskBadge.style.cssText = "font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;padding:4px 12px;border-radius:20px;";
         riskBadge.innerHTML = "<span>Tier 2 (High Risk)</span>";
     } else {
-        riskBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300";
+        riskBadge.className = "tier-1";
+        riskBadge.style.cssText = "font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;padding:4px 12px;border-radius:20px;";
         riskBadge.innerHTML = "<span>Tier 1 (Low Risk)</span>";
     }
 
@@ -319,32 +338,37 @@ async function loadApprovalQueue() {
         tbody.innerHTML = "";
 
         if (submissions.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-xs text-slate-500">No submissions found. Submit content to populate the queue.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="padding:32px;text-align:center;font-size:12px;color:#6b7280;">No submissions found. Submit content to populate the queue.</td></tr>`;
             return;
         }
 
         submissions.forEach(item => {
             const s = item.submission;
             const tr = document.createElement("tr");
-            tr.className = "hover:bg-slate-50/80 cursor-pointer transition";
+            tr.style.cursor = "pointer";
             tr.onclick = () => selectApprovalSubmission(s.id);
 
-            let statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">${s.status}</span>`;
-            if (s.status === "approved") statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">Approved</span>`;
-            if (s.status === "in_review") statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-800">In Review</span>`;
-            if (s.status === "changes_requested") statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800">Changes Req</span>`;
-            if (s.status === "rejected") statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-800">Rejected</span>`;
+            const statusColors = {
+                approved: { bg: 'rgba(6,214,160,0.15)', color: '#6ee7b7' },
+                in_review: { bg: 'rgba(76,201,240,0.15)', color: '#93c5fd' },
+                changes_requested: { bg: 'rgba(245,158,11,0.15)', color: '#fcd34d' },
+                rejected: { bg: 'rgba(239,68,68,0.15)', color: '#fca5a5' }
+            };
+            const sc = statusColors[s.status] || { bg: 'rgba(255,255,255,0.08)', color: '#a0a0c8' };
+            const statusBadge = `<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:${sc.bg};color:${sc.color};">${s.status}</span>`;
 
-            let tierBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold ${s.risk_tier === 'Tier 3' ? 'bg-red-100 text-red-800' : (s.risk_tier === 'Tier 2' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800')}">${s.risk_tier}</span>`;
+            const tierColors = { 'Tier 3': '#fca5a5', 'Tier 2': '#fcd34d', 'Tier 1': '#6ee7b7' };
+            const tierBg = { 'Tier 3': 'rgba(239,68,68,0.15)', 'Tier 2': 'rgba(245,158,11,0.15)', 'Tier 1': 'rgba(6,214,160,0.15)' };
+            const tierBadge = `<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:${tierBg[s.risk_tier]||'rgba(255,255,255,0.08)'};color:${tierColors[s.risk_tier]||'#a0a0c8'};">${s.risk_tier}</span>`;
 
             tr.innerHTML = `
-                <td class="px-6 py-3 font-semibold text-slate-800">${escapeHtml(s.title)}</td>
-                <td class="px-6 py-3 text-slate-600 capitalize">${s.channel}</td>
-                <td class="px-6 py-3">${tierBadge}</td>
-                <td class="px-6 py-3">${statusBadge}</td>
-                <td class="px-6 py-3 text-slate-500 font-mono text-xs">${item.findings_count} issues</td>
-                <td class="px-6 py-3 text-right">
-                    <button class="text-xs text-blue-600 font-semibold hover:underline">Inspect →</button>
+                <td style="padding:12px 16px;font-weight:600;color:#f0f0ff;">${escapeHtml(s.title)}</td>
+                <td style="padding:12px 16px;color:#a0a0c8;text-transform:capitalize;">${s.channel}</td>
+                <td style="padding:12px 16px;">${tierBadge}</td>
+                <td style="padding:12px 16px;">${statusBadge}</td>
+                <td style="padding:12px 16px;color:#6b7280;font-family:monospace;font-size:11px;">${item.findings_count} issues</td>
+                <td style="padding:12px 16px;text-align:right;">
+                    <button style="background:none;border:none;cursor:pointer;font-size:11px;color:#8b5cf6;font-weight:600;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Inspect →</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -367,7 +391,7 @@ async function selectApprovalSubmission(subId) {
         if (!res.ok) return;
         const detail = await res.json();
         const panel = document.getElementById("approval-detail-panel");
-        panel.classList.remove("hidden");
+        panel.style.display = "block";
 
         const s = detail.submission;
         const activeVer = detail.active_version;
@@ -381,9 +405,9 @@ async function selectApprovalSubmission(subId) {
         // Check Tier 3 Compliance Gate Alert
         const alertBox = document.getElementById("tier3-compliance-alert");
         if (s.risk_tier === "Tier 3") {
-            alertBox.classList.remove("hidden");
+            alertBox.style.display = "block";
         } else {
-            alertBox.classList.add("hidden");
+            alertBox.style.display = "none";
         }
 
         // Render timeline
@@ -391,12 +415,12 @@ async function selectApprovalSubmission(subId) {
         timeline.innerHTML = "";
         detail.audit_logs.forEach(log => {
             const div = document.createElement("div");
-            div.className = "flex items-start space-x-2 border-l-2 border-slate-300 pl-2.5 py-1";
+            div.style.cssText = "display:flex;align-items:flex-start;gap:10px;border-left:2px solid rgba(139,92,246,0.3);padding-left:12px;padding-bottom:8px;";
             div.innerHTML = `
-                <div class="text-[11px]">
-                    <span class="font-semibold text-slate-800">${escapeHtml(log.actor_role)}</span>
-                    <span class="text-slate-400">(${log.action})</span>:
-                    <span class="text-slate-600">${escapeHtml(log.detail)}</span>
+                <div style="font-size:11px;color:#a0a0c8;">
+                    <span style="font-weight:700;color:#c4b5fd;">${escapeHtml(log.actor_role)}</span>
+                    <span style="color:#6b7280;">(${log.action})</span>:
+                    <span>${escapeHtml(log.detail)}</span>
                 </div>
             `;
             timeline.appendChild(div);
@@ -443,14 +467,14 @@ async function switchCanonTab(tab) {
         const btn = document.getElementById(`canon-tab-${t}`);
         if (!btn) return;
         if (t === tab) {
-            btn.className = "canon-tab py-2 px-3 text-sm font-semibold border-b-2 border-finedge-navy text-finedge-navy";
+            btn.classList.add("active");
         } else {
-            btn.className = "canon-tab py-2 px-3 text-sm font-medium text-slate-500 hover:text-slate-800";
+            btn.classList.remove("active");
         }
     });
 
     const container = document.getElementById("canon-content-container");
-    container.innerHTML = `<div class="text-center py-6 text-xs text-slate-500">Loading ${tab}...</div>`;
+    container.innerHTML = `<div style="text-align:center;padding:32px;font-size:12px;color:#6b7280;">Loading ${tab}...</div>`;
 
     try {
         const res = await fetch(`/api/canon/${tab}`);
@@ -458,16 +482,18 @@ async function switchCanonTab(tab) {
         const data = await res.json();
 
         if (tab === "rules") {
-            let html = `<div class="space-y-3">`;
+            let html = `<div style="display:flex;flex-direction:column;gap:10px;">`;
             data.forEach(r => {
+                const sevColor = r.severity === 'critical' ? 'rgba(239,68,68,0.15)' : r.severity === 'high' ? 'rgba(245,158,11,0.15)' : 'rgba(76,201,240,0.1)';
+                const sevText = r.severity === 'critical' ? '#fca5a5' : r.severity === 'high' ? '#fcd34d' : '#93c5fd';
                 html += `
-                    <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="font-mono text-xs font-bold text-slate-800">${r.id} (${r.category})</span>
-                            <span class="text-[11px] font-semibold px-2 py-0.5 rounded ${r.severity === 'critical' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">${r.severity}</span>
+                    <div style="padding:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                            <span style="font-family:monospace;font-size:12px;font-weight:700;color:#c4b5fd;">${r.id} <span style="color:#6b7280;font-weight:400;">(${r.category})</span></span>
+                            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:${sevColor};color:${sevText};">${r.severity}</span>
                         </div>
-                        <p class="text-xs text-slate-700">${escapeHtml(r.text)}</p>
-                        ${r.fix_hint ? `<p class="text-[11px] text-emerald-700 mt-1"><strong>Fix:</strong> ${escapeHtml(r.fix_hint)}</p>` : ''}
+                        <p style="font-size:12px;color:#a0a0c8;margin:0 0 4px;">${escapeHtml(r.text)}</p>
+                        ${r.fix_hint ? `<p style="font-size:11px;color:#6ee7b7;margin:0;"><strong>Fix:</strong> ${escapeHtml(r.fix_hint)}</p>` : ''}
                     </div>
                 `;
             });
@@ -475,17 +501,17 @@ async function switchCanonTab(tab) {
             container.innerHTML = html;
 
         } else if (tab === "facts") {
-            let html = `<div class="space-y-3">`;
+            let html = `<div style="display:flex;flex-direction:column;gap:10px;">`;
             data.forEach(f => {
                 html += `
-                    <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="font-mono text-xs font-bold text-slate-800">${f.id} — ${escapeHtml(f.claim)}</span>
-                            ${f.is_expired ? '<span class="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded">EXPIRED</span>' : '<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">ACTIVE</span>'}
+                    <div style="padding:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                            <span style="font-family:monospace;font-size:12px;font-weight:700;color:#c4b5fd;">${f.id} — <span style="color:#a0a0c8;font-weight:400;">${escapeHtml(f.claim)}</span></span>
+                            ${f.is_expired ? '<span style="background:rgba(239,68,68,0.15);color:#fca5a5;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;">EXPIRED</span>' : '<span style="background:rgba(6,214,160,0.15);color:#6ee7b7;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;">ACTIVE</span>'}
                         </div>
-                        <div class="text-xs text-slate-700"><strong>Approved Metric:</strong> ${escapeHtml(f.value)}</div>
-                        <div class="text-[11px] text-slate-500 mt-0.5">Linked Keywords: ${(f.keywords || []).join(', ')}</div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">Valid: ${f.valid_from} to ${f.expires_on} | Owner: ${f.owner}</div>
+                        <div style="font-size:12px;color:#a0a0c8;margin-bottom:4px;"><strong style="color:#f0f0ff;">Approved Metric:</strong> ${escapeHtml(f.value)}</div>
+                        <div style="font-size:11px;color:#6b7280;margin-bottom:2px;">Keywords: ${(f.keywords || []).join(', ') || 'none'}</div>
+                        <div style="font-size:11px;color:#4b5563;">Valid: ${f.valid_from} to ${f.expires_on} | Owner: ${f.owner}</div>
                     </div>
                 `;
             });
@@ -493,13 +519,13 @@ async function switchCanonTab(tab) {
             container.innerHTML = html;
 
         } else if (tab === "terms") {
-            let html = `<div class="space-y-3">`;
+            let html = `<div style="display:flex;flex-direction:column;gap:10px;">`;
             data.forEach(t => {
                 html += `
-                    <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
-                        <div class="text-xs font-bold text-emerald-700">✓ Preferred: ${escapeHtml(t.preferred)}</div>
-                        <div class="text-xs text-red-700 mt-0.5">✕ Forbidden: ${(t.forbidden || []).join(', ')}</div>
-                        <div class="text-[11px] text-slate-500 mt-1">${escapeHtml(t.note || '')}</div>
+                    <div style="padding:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                        <div style="font-size:12px;font-weight:700;color:#6ee7b7;margin-bottom:4px;">✓ Preferred: ${escapeHtml(t.preferred)}</div>
+                        <div style="font-size:12px;color:#fca5a5;margin-bottom:4px;">✕ Forbidden: ${(t.forbidden || []).join(', ')}</div>
+                        <div style="font-size:11px;color:#6b7280;">${escapeHtml(t.note || '')}</div>
                     </div>
                 `;
             });
@@ -507,16 +533,16 @@ async function switchCanonTab(tab) {
             container.innerHTML = html;
 
         } else if (tab === "assets") {
-            let html = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+            let html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">`;
             data.forEach(a => {
                 const isColor = a.type === "color";
                 html += `
-                    <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200 flex items-start space-x-3">
-                        ${isColor ? `<div class="w-10 h-10 rounded-lg shadow-sm border border-slate-300 flex-shrink-0" style="background-color: ${a.value}"></div>` : ''}
+                    <div style="padding:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;display:flex;align-items:flex-start;gap:12px;">
+                        ${isColor ? `<div style="width:40px;height:40px;border-radius:8px;flex-shrink:0;border:1px solid rgba(255,255,255,0.1);background-color:${a.value};box-shadow:0 0 10px rgba(0,0,0,0.3);"></div>` : ''}
                         <div>
-                            <div class="text-xs font-bold text-slate-800">${escapeHtml(a.name)}</div>
-                            <div class="font-mono text-[11px] text-slate-600">${a.value}</div>
-                            <p class="text-[11px] text-slate-500 mt-1">${escapeHtml(a.usage_rule || '')}</p>
+                            <div style="font-size:12px;font-weight:700;color:#f0f0ff;margin-bottom:2px;">${escapeHtml(a.name)}</div>
+                            <div style="font-family:monospace;font-size:11px;color:#8b5cf6;">${a.value}</div>
+                            <p style="font-size:11px;color:#6b7280;margin:4px 0 0;">${escapeHtml(a.usage_rule || '')}</p>
                         </div>
                     </div>
                 `;
@@ -526,22 +552,22 @@ async function switchCanonTab(tab) {
         }
 
     } catch (e) {
-        container.innerHTML = `<div class="text-xs text-red-600">Failed to load canon tab: ${e.message}</div>`;
+        container.innerHTML = `<div style="font-size:12px;color:#fca5a5;">Failed to load canon tab: ${e.message}</div>`;
     }
 }
 
 // Contrast Modal
 function openContrastModal() {
-    document.getElementById("contrast-modal").classList.remove("hidden");
+    document.getElementById("contrast-modal").style.display = "flex";
 }
 function closeContrastModal() {
-    document.getElementById("contrast-modal").classList.add("hidden");
+    document.getElementById("contrast-modal").style.display = "none";
 }
 async function runContrastCheck() {
     const fg = document.getElementById("contrast-fg").value.trim();
     const bg = document.getElementById("contrast-bg").value.trim();
     const box = document.getElementById("contrast-result-box");
-    box.classList.remove("hidden");
+    box.style.display = "block";
 
     try {
         const res = await fetch("/api/tools/contrast", {
@@ -552,16 +578,16 @@ async function runContrastCheck() {
         const data = await res.json();
         if (res.ok) {
             box.innerHTML = `
-                <div class="font-bold text-sm ${data.wcag_aa_normal_pass ? 'text-emerald-700' : 'text-red-700'}">
+                <div style="font-weight:700;font-size:13px;color:${data.wcag_aa_normal_pass ? '#6ee7b7' : '#fca5a5'};">
                     Ratio: ${data.ratio}:1 — ${data.wcag_aa_normal_pass ? '✓ PASSES WCAG AA' : '✕ FAILS WCAG AA'}
                 </div>
-                <div class="text-[11px] text-slate-600 mt-1">${data.explanation}</div>
+                <div style="font-size:11px;color:#a0a0c8;margin-top:4px;">${data.explanation}</div>
             `;
         } else {
-            box.innerHTML = `<div class="text-red-600">${data.detail}</div>`;
+            box.innerHTML = `<div style="color:#fca5a5;">${data.detail}</div>`;
         }
     } catch (e) {
-        box.innerHTML = `<div class="text-red-600">${e.message}</div>`;
+        box.innerHTML = `<div style="color:#fca5a5;">${e.message}</div>`;
     }
 }
 
@@ -571,11 +597,11 @@ function openAddRuleModal() {
         document.getElementById("role-selector").value = "Admin";
         onRoleChanged();
     }
-    document.getElementById("add-rule-modal").classList.remove("hidden");
+    document.getElementById("add-rule-modal").style.display = "flex";
 }
 
 function closeAddRuleModal() {
-    document.getElementById("add-rule-modal").classList.add("hidden");
+    document.getElementById("add-rule-modal").style.display = "none";
 }
 
 async function submitNewRule() {
@@ -619,11 +645,11 @@ function openAddFactModal() {
         document.getElementById("role-selector").value = "Admin";
         onRoleChanged();
     }
-    document.getElementById("add-fact-modal").classList.remove("hidden");
+    document.getElementById("add-fact-modal").style.display = "flex";
 }
 
 function closeAddFactModal() {
-    document.getElementById("add-fact-modal").classList.add("hidden");
+    document.getElementById("add-fact-modal").style.display = "none";
 }
 
 async function submitNewFact() {

@@ -11,14 +11,14 @@ function renderHighlightedText(text, findings) {
     // If there are missing elements (like missing disclaimer), display notice banner at top
     if (missingFindings.length > 0) {
         const missingBox = document.createElement("div");
-        missingBox.className = "mb-4 p-3 bg-red-50 border-l-4 border-red-500 rounded-r-lg text-xs text-red-800 space-y-1.5";
-        missingBox.innerHTML = `<strong>⚠️ Missing Required Statutory Elements:</strong>`;
+        missingBox.style.cssText = "margin-bottom:16px;padding:12px 14px;background:rgba(239,68,68,0.1);border-left:3px solid rgba(239,68,68,0.6);border-radius:0 8px 8px 0;font-size:12px;color:#fca5a5;";
+        missingBox.innerHTML = `<strong style="color:#fca5a5;">⚠️ Missing Required Statutory Elements:</strong>`;
         missingFindings.forEach(mf => {
             const item = document.createElement("div");
-            item.className = "flex items-center justify-between";
+            item.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-top:6px;";
             item.innerHTML = `
-                <span><strong>[${mf.rule_id}]</strong> ${escapeHtml(mf.explanation)}</span>
-                <button onclick="selectFinding('${mf.id}')" class="text-[11px] underline font-semibold ml-2">Inspect Fix</button>
+                <span><strong style="color:#c4b5fd;">[${mf.rule_id}]</strong> ${escapeHtml(mf.explanation)}</span>
+                <button onclick="selectFinding('${mf.id}')" style="background:none;border:none;cursor:pointer;font-size:11px;color:#8b5cf6;text-decoration:underline;margin-left:8px;">Inspect Fix</button>
             `;
             missingBox.appendChild(item);
         });
@@ -29,7 +29,7 @@ function renderHighlightedText(text, findings) {
     // Handle non-overlapping spans
     const sortedSpans = [...spanFindings].sort((a, b) => a.span_start - b.span_start);
     const textWrapper = document.createElement("div");
-    textWrapper.className = "leading-loose";
+    textWrapper.style.lineHeight = "2";
 
     let lastIdx = 0;
     sortedSpans.forEach(f => {
@@ -68,7 +68,7 @@ function renderFindingCards(findings) {
 
     if (findings.length === 0) {
         container.innerHTML = `
-            <div class="p-6 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-xs text-emerald-800">
+            <div style="padding:24px;background:rgba(6,214,160,0.08);border:1px solid rgba(6,214,160,0.25);border-radius:12px;text-align:center;font-size:12px;color:#6ee7b7;">
                 ✓ No brand guideline violations detected! Content meets all approved standards.
             </div>
         `;
@@ -78,70 +78,53 @@ function renderFindingCards(findings) {
     findings.forEach(f => {
         const card = document.createElement("div");
         const sev = (f.severity || "medium").toLowerCase();
-        let borderClass = "border-slate-200";
-        let sevBadgeClass = "bg-blue-100 text-blue-800";
-        if (sev === "critical") {
-            borderClass = "border-red-300 bg-red-50/30";
-            sevBadgeClass = "bg-red-100 text-red-800 border border-red-200";
-        } else if (sev === "high") {
-            borderClass = "border-amber-300 bg-amber-50/20";
-            sevBadgeClass = "bg-amber-100 text-amber-800 border border-amber-200";
-        }
-
-        card.className = `finding-card p-4 rounded-xl border ${borderClass} bg-white shadow-sm space-y-3 transition`;
+        card.className = `finding-card severity-${sev}`;
         card.id = `finding-card-${f.id}`;
 
+        const sevBadge = `<span class="sev-badge sev-${sev}">${f.severity}</span>`;
+        const idBadge = `<span style="font-size:10px;font-family:monospace;background:rgba(255,255,255,0.08);color:#a0a0c8;padding:2px 7px;border-radius:6px;font-weight:600;">${f.rule_id || f.fact_id || f.kind}</span>`;
         const isAccepted = f.decision === "accepted" || f.decision === "edited";
         const isDismissed = f.decision === "dismissed";
 
         card.innerHTML = `
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-1.5">
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase ${sevBadgeClass}">${f.severity}</span>
-                    <span class="text-[10px] font-mono bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-semibold">${f.rule_id || f.fact_id || f.kind}</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                    ${sevBadge}
+                    ${idBadge}
                 </div>
-                <span class="text-[11px] text-slate-400 font-mono">Conf: ${(f.confidence * 100).toFixed(0)}%</span>
+                <span style="font-size:10px;color:#6b7280;font-family:monospace;">Conf: ${(f.confidence * 100).toFixed(0)}%</span>
             </div>
 
-            <!-- Issue quote & Explanation -->
-            <div>
-                ${f.quoted_text ? `<div class="text-xs font-semibold text-slate-800 bg-slate-100 px-2 py-1 rounded inline-block mb-1.5 font-mono">"${escapeHtml(f.quoted_text)}"</div>` : ''}
-                <p class="text-xs text-slate-700 leading-relaxed">${escapeHtml(f.explanation)}</p>
+            <div style="margin-bottom:10px;">
+                ${f.quoted_text ? `<div style="font-size:11px;font-family:monospace;background:rgba(255,255,255,0.05);color:#c4b5fd;padding:5px 9px;border-radius:7px;margin-bottom:7px;border:1px solid rgba(139,92,246,0.2);">"${escapeHtml(f.quoted_text)}"</div>` : ''}
+                <p style="font-size:12px;color:#a0a0c8;line-height:1.6;margin:0;">${escapeHtml(f.explanation)}</p>
             </div>
 
-            <!-- Suggested Fix -->
             ${f.suggested_fix ? `
-                <div class="p-2.5 bg-emerald-50/80 rounded-lg border border-emerald-200 text-xs">
-                    <span class="font-semibold text-emerald-900 block text-[11px] uppercase tracking-wider mb-0.5">Proposed Fix:</span>
-                    <code class="text-emerald-800 font-mono text-xs block whitespace-pre-wrap">${escapeHtml(f.suggested_fix)}</code>
+                <div style="padding:10px;background:rgba(6,214,160,0.08);border-radius:8px;border:1px solid rgba(6,214,160,0.2);margin-bottom:10px;">
+                    <span style="font-size:10px;font-weight:700;color:#6ee7b7;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:4px;">Proposed Fix:</span>
+                    <code style="font-size:11px;color:#a7f3d0;font-family:monospace;display:block;white-space:pre-wrap;">${escapeHtml(f.suggested_fix)}</code>
                 </div>
             ` : ''}
 
-            <!-- Decision Status or Action Buttons -->
             ${isAccepted ? `
-                <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-xs text-emerald-700 font-semibold">
-                    <span>✓ Fix Accepted (${f.decision})</span>
-                    <button onclick="revertFindingDecision('${f.id}')" class="text-slate-400 hover:text-slate-600 text-[11px] font-normal underline">Undo</button>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:11px;color:#6ee7b7;font-weight:700;">✓ Fix Accepted (${f.decision})</span>
+                    <button onclick="revertFindingDecision('${f.id}')" style="background:none;border:none;cursor:pointer;font-size:11px;color:#6b7280;text-decoration:underline;" onmouseover="this.style.color='#a0a0c8'" onmouseout="this.style.color='#6b7280'">Undo</button>
                 </div>
             ` : (isDismissed ? `
-                <div class="pt-1 border-t border-slate-100 text-xs text-slate-500">
-                    <div class="flex items-center justify-between">
-                        <span class="font-semibold text-red-700">✕ Dismissed</span>
-                        <button onclick="revertFindingDecision('${f.id}')" class="text-slate-400 hover:text-slate-600 text-[11px] font-normal underline">Undo</button>
+                <div style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                        <span style="font-size:11px;color:#fca5a5;font-weight:700;">✕ Dismissed</span>
+                        <button onclick="revertFindingDecision('${f.id}')" style="background:none;border:none;cursor:pointer;font-size:11px;color:#6b7280;text-decoration:underline;" onmouseover="this.style.color='#a0a0c8'" onmouseout="this.style.color='#6b7280'">Undo</button>
                     </div>
-                    <p class="text-[11px] text-slate-500 italic mt-0.5">Reason: "${escapeHtml(f.decision_reason || '')}"</p>
+                    <p style="font-size:11px;color:#6b7280;font-style:italic;margin:0;">Reason: "${escapeHtml(f.decision_reason || '')}"</p>
                 </div>
             ` : `
-                <div class="flex items-center space-x-1.5 pt-1 border-t border-slate-100">
-                    <button onclick="acceptFindingFix('${f.id}')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-1.5 px-2 rounded-lg text-xs shadow-sm transition">
-                        ✓ Accept Fix
-                    </button>
-                    <button onclick="editFindingFix('${f.id}')" class="px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-100 rounded-lg border border-slate-300 font-medium transition">
-                        Edit
-                    </button>
-                    <button onclick="openDismissModal('${f.id}')" class="px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded-lg border border-red-200 font-medium transition">
-                        Dismiss
-                    </button>
+                <div style="display:flex;align-items:center;gap:6px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
+                    <button onclick="acceptFindingFix('${f.id}')" class="btn-accept" style="flex:1;">✓ Accept Fix</button>
+                    <button onclick="editFindingFix('${f.id}')" class="btn-dismiss" style="padding:5px 10px;">Edit</button>
+                    <button onclick="openDismissModal('${f.id}')" class="btn-dismiss" style="padding:5px 10px;color:#fca5a5;">Dismiss</button>
                 </div>
             `)}
         `;
@@ -149,13 +132,17 @@ function renderFindingCards(findings) {
     });
 }
 
+
 // Select finding card and scroll corresponding element into view
 function selectFinding(findingId) {
     state.selectedFindingId = findingId;
 
     // Remove active highlight from all
     document.querySelectorAll(".highlight-span").forEach(el => el.classList.remove("highlight-selected"));
-    document.querySelectorAll(".finding-card").forEach(el => el.classList.remove("ring-2", "ring-finedge-cyan"));
+    document.querySelectorAll(".finding-card").forEach(el => {
+        el.style.outline = "";
+        el.style.boxShadow = "";
+    });
 
     // Highlight text span
     const span = document.getElementById(`highlight-span-${findingId}`);
@@ -167,7 +154,8 @@ function selectFinding(findingId) {
     // Highlight card
     const card = document.getElementById(`finding-card-${findingId}`);
     if (card) {
-        card.classList.add("ring-2", "ring-finedge-cyan");
+        card.style.outline = "1px solid rgba(139,92,246,0.6)";
+        card.style.boxShadow = "0 0 20px rgba(139,92,246,0.25)";
         card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 }
@@ -195,12 +183,12 @@ async function revertFindingDecision(findingId) {
 function openDismissModal(findingId) {
     document.getElementById("dismiss-finding-id").value = findingId;
     document.getElementById("dismiss-reason-input").value = "";
-    document.getElementById("dismiss-modal").classList.remove("hidden");
+    document.getElementById("dismiss-modal").style.display = "flex";
     document.getElementById("dismiss-reason-input").focus();
 }
 
 function closeDismissModal() {
-    document.getElementById("dismiss-modal").classList.add("hidden");
+    document.getElementById("dismiss-modal").style.display = "none";
 }
 
 async function confirmDismissFinding() {
