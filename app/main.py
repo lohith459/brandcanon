@@ -12,6 +12,11 @@ from app.config import settings
 from app.database import engine, init_db
 from app.seed.seed_data import seed_canon_data
 from app.api.health import router as health_router
+from app.api.submissions import router as submissions_router
+from app.api.review import router as review_router
+from app.api.workflow import router as workflow_router
+from app.api.tools import router as tools_router
+from app.api.canon import router as canon_router
 
 # In-memory rate limiter: tracks timestamps per client IP
 rate_limit_records = defaultdict(list)
@@ -59,8 +64,13 @@ async def security_headers_middleware(request: Request, call_next):
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response
 
-# Include health router
+# Include API routers
 app.include_router(health_router)
+app.include_router(submissions_router)
+app.include_router(review_router)
+app.include_router(workflow_router)
+app.include_router(tools_router)
+app.include_router(canon_router)
 
 # Static files directory
 static_dir = os.path.join(os.path.dirname(__file__), "static")

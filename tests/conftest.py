@@ -18,7 +18,7 @@ test_engine = create_engine(
 @pytest.fixture(name="session")
 def session_fixture() -> Generator[Session, None, None]:
     SQLModel.metadata.create_all(test_engine)
-    with Session(test_engine) as session:
+    with Session(test_engine, expire_on_commit=False) as session:
         seed_canon_data(session)
         yield session
     SQLModel.metadata.drop_all(test_engine)
