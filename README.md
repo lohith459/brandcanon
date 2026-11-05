@@ -50,14 +50,14 @@ flowchart TD
 
 ## 📊 Evaluation Benchmark Results
 
-The review engine is evaluated against a 30-piece labelled test corpus (`evaluation/corpus.json`) covering planted violations across all categories:
+The review engine is evaluated against a 30-piece labelled test corpus (`evaluation/corpus.json`) that is **team-authored and seeded** with realistic planted violations across all categories:
 
-| Metric | Score | Industry Standard Benchmark |
-|---|---|---|
-| **Overall Precision** | **100.00%** | > 85.0% |
-| **Overall Recall** | **89.47%** | > 80.0% |
-| **Overall F1 Score** | **94.44%** | > 80.0% |
-| **Citation-Integrity Rate** | **100.00%** | **Evidence-or-Silence: 100%** |
+| Metric | Score |
+|---|---|
+| **Overall Precision** | **100.00%** |
+| **Overall Recall** | **89.47%** |
+| **Overall F1 Score** | **94.44%** |
+| **Citation-Integrity Rate** | **100.00%** (Evidence-or-Silence) |
 
 ### Category Breakdown
 - **Accessibility**: 100% Precision | 100% Recall
