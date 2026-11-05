@@ -1,0 +1,97 @@
+/* BrandCanon Accessibility & Visual Polish Styles */
+
+:root {
+    --navy-primary: #0A192F;
+    --emerald-accent: #00D2A0;
+    --slate-text: #4A5568;
+    --coral-critical: #E53E3E;
+    --amber-high: #DD6B20;
+    --blue-medium: #3182CE;
+    --teal-low: #319795;
+}
+
+/* Severity highlight spans in document view: Accessible using background tint, colored border, and bottom dash */
+.highlight-span {
+    padding: 2px 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s ease-in-out;
+    position: relative;
+}
+
+.highlight-span:focus {
+    outline: 2px solid #0A192F;
+    outline-offset: 2px;
+}
+
+/* Critical Severity: Crimson tint + thick border + dot icon representation */
+.highlight-critical {
+    background-color: rgba(229, 62, 62, 0.22);
+    border: 1.5px solid #E53E3E;
+    color: #9B2C2C;
+}
+.highlight-critical::after {
+    content: " ⚠️";
+    font-size: 0.75rem;
+}
+
+/* High Severity: Amber tint + solid border */
+.highlight-high {
+    background-color: rgba(221, 107, 32, 0.22);
+    border: 1.5px solid #DD6B20;
+    color: #9C4221;
+}
+
+/* Medium Severity: Blue tint + dashed border */
+.highlight-medium {
+    background-color: rgba(49, 130, 206, 0.18);
+    border: 1.5px dashed #3182CE;
+    color: #2B6CB0;
+}
+
+/* Low Severity: Teal tint + dotted border */
+.highlight-low {
+    background-color: rgba(49, 151, 149, 0.18);
+    border: 1.5px dotted #319795;
+    color: #234E52;
+}
+
+/* Active selected highlight */
+.highlight-selected {
+    box-shadow: 0 0 0 3px rgba(10, 25, 47, 0.4);
+    transform: scale(1.02);
+}
+
+/* Diff highlights */
+.diff-del {
+    background-color: rgba(229, 62, 62, 0.2);
+    text-decoration: line-through;
+    color: #C53030;
+    padding: 1px 3px;
+    border-radius: 2px;
+}
+
+.diff-ins {
+    background-color: rgba(0, 210, 160, 0.25);
+    color: #065F46;
+    font-weight: 600;
+    padding: 1px 3px;
+    border-radius: 2px;
+}
+
+/* Accessible scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #F7FAFC;
+}
+::-webkit-scrollbar-thumb {
+    background: #CBD5E0;
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #A0AEC0;
+}
