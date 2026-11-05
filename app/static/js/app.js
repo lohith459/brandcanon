@@ -565,6 +565,104 @@ async function runContrastCheck() {
     }
 }
 
+function openAddRuleModal() {
+    if (state.currentRole !== "Admin") {
+        alert("Rule creation requires Admin permissions. Switching demo role to Admin...");
+        document.getElementById("role-selector").value = "Admin";
+        onRoleChanged();
+    }
+    document.getElementById("add-rule-modal").classList.remove("hidden");
+}
+
+function closeAddRuleModal() {
+    document.getElementById("add-rule-modal").classList.add("hidden");
+}
+
+async function submitNewRule() {
+    const id = document.getElementById("new-rule-id").value.trim();
+    const category = document.getElementById("new-rule-category").value;
+    const severity = document.getElementById("new-rule-severity").value;
+    const text = document.getElementById("new-rule-text").value.trim();
+    const pattern = document.getElementById("new-rule-pattern").value.trim() || null;
+    const fix_hint = document.getElementById("new-rule-fix").value.trim() || null;
+
+    if (!id || !text) {
+        alert("Please provide both Rule ID and Rule text.");
+        return;
+    }
+
+    try {
+        const res = await fetch("/api/canon/rules", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Demo-Role": state.currentRole
+            },
+            body: JSON.stringify({ id, category, severity, text, pattern, fix_hint, active: true })
+        });
+        if (res.ok) {
+            alert(`Rule ${id} added successfully!`);
+            closeAddRuleModal();
+            switchCanonTab("rules");
+        } else {
+            const err = await res.json();
+            alert(`Failed to add rule: ${err.detail}`);
+        }
+    } catch (e) {
+        alert(`Error: ${e.message}`);
+    }
+}
+
+function openAddFactModal() {
+    if (state.currentRole !== "Admin") {
+        alert("Fact registration requires Admin permissions. Switching demo role to Admin...");
+        document.getElementById("role-selector").value = "Admin";
+        onRoleChanged();
+    }
+    document.getElementById("add-fact-modal").classList.remove("hidden");
+}
+
+function closeAddFactModal() {
+    document.getElementById("add-fact-modal").classList.add("hidden");
+}
+
+async function submitNewFact() {
+    const id = document.getElementById("new-fact-id").value.trim();
+    const claim = document.getElementById("new-fact-claim").value.trim();
+    const value = document.getElementById("new-fact-value").value.trim();
+    const keywordsRaw = document.getElementById("new-fact-keywords").value.trim();
+    const keywords = keywordsRaw ? keywordsRaw.split(",").map(k => k.trim()).filter(Boolean) : [];
+    const valid_from = document.getElementById("new-fact-valid").value;
+    const expires_on = document.getElementById("new-fact-expires").value;
+    const owner = document.getElementById("new-fact-owner").value.trim();
+
+    if (!id || !claim || !value) {
+        alert("Please provide Fact ID, Claim description, and Approved value.");
+        return;
+    }
+
+    try {
+        const res = await fetch("/api/canon/facts", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Demo-Role": state.currentRole
+            },
+            body: JSON.stringify({ id, claim, value, keywords, valid_from, expires_on, owner })
+        });
+        if (res.ok) {
+            alert(`Fact ${id} registered successfully!`);
+            closeAddFactModal();
+            switchCanonTab("facts");
+        } else {
+            const err = await res.json();
+            alert(`Failed to add fact: ${err.detail}`);
+        }
+    } catch (e) {
+        alert(`Error: ${e.message}`);
+    }
+}
+
 function escapeHtml(text) {
     if (!text) return "";
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
